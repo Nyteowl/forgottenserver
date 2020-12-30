@@ -24,15 +24,13 @@
 
 class Creature;
 
-class SpectatorVec
-{
+class SpectatorVec {
 	using Vec = std::vector<Creature*>;
 	using Iterator = Vec::iterator;
 	using ConstIterator = Vec::const_iterator;
-public:
-	SpectatorVec() {
-		vec.reserve(32);
-	}
+
+ public:
+	SpectatorVec() { vec.reserve(32); }
 
 	void addSpectators(const SpectatorVec& spectators) {
 		const size_t size = vec.size();
@@ -73,10 +71,12 @@ public:
 	inline ConstIterator cend() const { return vec.cend(); }
 	inline void emplace_back(Creature* c) { return vec.emplace_back(c); }
 
-	template<class InputIterator>
-	inline void insert(Iterator pos, InputIterator first, InputIterator last) { vec.insert(pos, first, last); }
+	template <class InputIterator>
+	inline void insert(Iterator pos, InputIterator first, InputIterator last) {
+		vec.insert(pos, first, last);
+	}
 
-private:
+ private:
 	Vec vec;
 };
 

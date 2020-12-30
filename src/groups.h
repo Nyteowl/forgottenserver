@@ -30,12 +30,12 @@ struct Group {
 };
 
 class Groups {
-	public:
-		bool load();
-		Group* getGroup(uint16_t id);
+ public:
+	bool load();
+	Group* getGroup(uint16_t id);
 
-	private:
-		std::vector<Group> groups;
+ private:
+	std::vector<Group> groups;
 };
 
 #endif

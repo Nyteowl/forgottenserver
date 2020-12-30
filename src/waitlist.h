@@ -24,18 +24,17 @@
 
 struct WaitListInfo;
 
-class WaitingList
-{
-	public:
-		static WaitingList& getInstance();
+class WaitingList {
+ public:
+	static WaitingList& getInstance();
 
-		std::size_t clientLogin(const Player* player);
-		static uint8_t getTime(std::size_t slot);
+	std::size_t clientLogin(const Player* player);
+	static uint8_t getTime(std::size_t slot);
 
-	private:
-		WaitingList();
+ private:
+	WaitingList();
 
-		std::unique_ptr<WaitListInfo> info;
+	std::unique_ptr<WaitListInfo> info;
 };
 
 #endif

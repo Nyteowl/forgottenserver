@@ -179,23 +179,23 @@ struct Abilities {
 	uint32_t conditionImmunities = 0;
 	uint32_t conditionSuppressions = 0;
 
-	//stats modifiers
-	int32_t stats[STAT_LAST + 1] = { 0 };
-	int32_t statsPercent[STAT_LAST + 1] = { 0 };
+	// stats modifiers
+	int32_t stats[STAT_LAST + 1] = {0};
+	int32_t statsPercent[STAT_LAST + 1] = {0};
 
-	//extra skill modifiers
-	int32_t skills[SKILL_LAST + 1] = { 0 };
-	int32_t specialSkills[SPECIALSKILL_LAST + 1] = { 0 };
+	// extra skill modifiers
+	int32_t skills[SKILL_LAST + 1] = {0};
+	int32_t specialSkills[SPECIALSKILL_LAST + 1] = {0};
 
 	int32_t speed = 0;
 
 	// field damage abilities modifiers
-	int16_t fieldAbsorbPercent[COMBAT_COUNT] = { 0 };
+	int16_t fieldAbsorbPercent[COMBAT_COUNT] = {0};
 
-	//damage abilities modifiers
-	int16_t absorbPercent[COMBAT_COUNT] = { 0 };
+	// damage abilities modifiers
+	int16_t absorbPercent[COMBAT_COUNT] = {0};
 
-	//elemental damage
+	// elemental damage
 	uint16_t elementDamage = 0;
 	CombatType_t elementType = COMBAT_NONE;
 
@@ -206,264 +206,222 @@ struct Abilities {
 
 class ConditionDamage;
 
-class ItemType
-{
-	public:
-		ItemType() = default;
+class ItemType {
+ public:
+	ItemType() = default;
 
-		//non-copyable
-		ItemType(const ItemType& other) = delete;
-		ItemType& operator=(const ItemType& other) = delete;
+	// non-copyable
+	ItemType(const ItemType& other) = delete;
+	ItemType& operator=(const ItemType& other) = delete;
 
-		ItemType(ItemType&& other) = default;
-		ItemType& operator=(ItemType&& other) = default;
+	ItemType(ItemType&& other) = default;
+	ItemType& operator=(ItemType&& other) = default;
 
-		bool isGroundTile() const {
-			return group == ITEM_GROUP_GROUND;
-		}
-		bool isContainer() const {
-			return group == ITEM_GROUP_CONTAINER;
-		}
-		bool isSplash() const {
-			return group == ITEM_GROUP_SPLASH;
-		}
-		bool isFluidContainer() const {
-			return group == ITEM_GROUP_FLUID;
-		}
+	bool isGroundTile() const { return group == ITEM_GROUP_GROUND; }
+	bool isContainer() const { return group == ITEM_GROUP_CONTAINER; }
+	bool isSplash() const { return group == ITEM_GROUP_SPLASH; }
+	bool isFluidContainer() const { return group == ITEM_GROUP_FLUID; }
 
-		bool isDoor() const {
-			return (type == ITEM_TYPE_DOOR);
+	bool isDoor() const { return (type == ITEM_TYPE_DOOR); }
+	bool isMagicField() const { return (type == ITEM_TYPE_MAGICFIELD); }
+	bool isTeleport() const { return (type == ITEM_TYPE_TELEPORT); }
+	bool isKey() const { return (type == ITEM_TYPE_KEY); }
+	bool isDepot() const { return (type == ITEM_TYPE_DEPOT); }
+	bool isMailbox() const { return (type == ITEM_TYPE_MAILBOX); }
+	bool isTrashHolder() const { return (type == ITEM_TYPE_TRASHHOLDER); }
+	bool isBed() const { return (type == ITEM_TYPE_BED); }
+	bool isRune() const { return (type == ITEM_TYPE_RUNE); }
+	bool isPickupable() const { return (allowPickupable || pickupable); }
+	bool isUseable() const { return (useable); }
+	bool hasSubType() const {
+		return (isFluidContainer() || isSplash() || stackable || charges != 0);
+	}
+
+	Abilities& getAbilities() {
+		if (!abilities) {
+			abilities.reset(new Abilities());
 		}
-		bool isMagicField() const {
-			return (type == ITEM_TYPE_MAGICFIELD);
-		}
-		bool isTeleport() const {
-			return (type == ITEM_TYPE_TELEPORT);
-		}
-		bool isKey() const {
-			return (type == ITEM_TYPE_KEY);
-		}
-		bool isDepot() const {
-			return (type == ITEM_TYPE_DEPOT);
-		}
-		bool isMailbox() const {
-			return (type == ITEM_TYPE_MAILBOX);
-		}
-		bool isTrashHolder() const {
-			return (type == ITEM_TYPE_TRASHHOLDER);
-		}
-		bool isBed() const {
-			return (type == ITEM_TYPE_BED);
-		}
-		bool isRune() const {
-			return (type == ITEM_TYPE_RUNE);
-		}
-		bool isPickupable() const {
-			return (allowPickupable || pickupable);
-		}
-		bool isUseable() const {
-			return (useable);
-		}
-		bool hasSubType() const {
-			return (isFluidContainer() || isSplash() || stackable || charges != 0);
+		return *abilities;
+	}
+
+	std::string getPluralName() const {
+		if (!pluralName.empty()) {
+			return pluralName;
 		}
 
-		Abilities& getAbilities() {
-			if (!abilities) {
-				abilities.reset(new Abilities());
-			}
-			return *abilities;
+		if (showCount == 0) {
+			return name;
 		}
 
-		std::string getPluralName() const {
-			if (!pluralName.empty()) {
-				return pluralName;
-			}
-
-			if (showCount == 0) {
-				return name;
-			}
-
-			if (name.empty() || name.back() == 's') {
-				return name;
-			}
-
-			std::string str;
-			str.reserve(name.length() + 1);
-			str.assign(name);
-			str += 's';
-			return str;
+		if (name.empty() || name.back() == 's') {
+			return name;
 		}
 
-		itemgroup_t group = ITEM_GROUP_NONE;
-		ItemTypes_t type = ITEM_TYPE_NONE;
-		uint16_t id = 0;
-		uint16_t clientId = 0;
-		bool stackable = false;
-		bool isAnimation = false;
+		std::string str;
+		str.reserve(name.length() + 1);
+		str.assign(name);
+		str += 's';
+		return str;
+	}
 
-		std::string name;
-		std::string article;
-		std::string pluralName;
-		std::string description;
-		std::string runeSpellName;
-		std::string vocationString;
+	itemgroup_t group = ITEM_GROUP_NONE;
+	ItemTypes_t type = ITEM_TYPE_NONE;
+	uint16_t id = 0;
+	uint16_t clientId = 0;
+	bool stackable = false;
+	bool isAnimation = false;
 
-		std::unique_ptr<Abilities> abilities;
-		std::unique_ptr<ConditionDamage> conditionDamage;
+	std::string name;
+	std::string article;
+	std::string pluralName;
+	std::string description;
+	std::string runeSpellName;
+	std::string vocationString;
 
-		uint32_t weight = 0;
-		uint32_t levelDoor = 0;
-		uint32_t decayTime = 0;
-		uint32_t wieldInfo = 0;
-		uint32_t minReqLevel = 0;
-		uint32_t minReqMagicLevel = 0;
-		uint32_t charges = 0;
-		int32_t maxHitChance = -1;
-		int32_t decayTo = -1;
-		int32_t attack = 0;
-		int32_t defense = 0;
-		int32_t extraDefense = 0;
-		int32_t armor = 0;
-		uint16_t rotateTo = 0;
-		int32_t runeMagLevel = 0;
-		int32_t runeLevel = 0;
+	std::unique_ptr<Abilities> abilities;
+	std::unique_ptr<ConditionDamage> conditionDamage;
 
-		CombatType_t combatType = COMBAT_NONE;
+	uint32_t weight = 0;
+	uint32_t levelDoor = 0;
+	uint32_t decayTime = 0;
+	uint32_t wieldInfo = 0;
+	uint32_t minReqLevel = 0;
+	uint32_t minReqMagicLevel = 0;
+	uint32_t charges = 0;
+	int32_t maxHitChance = -1;
+	int32_t decayTo = -1;
+	int32_t attack = 0;
+	int32_t defense = 0;
+	int32_t extraDefense = 0;
+	int32_t armor = 0;
+	uint16_t rotateTo = 0;
+	int32_t runeMagLevel = 0;
+	int32_t runeLevel = 0;
 
-		uint16_t transformToOnUse[2] = {0, 0};
-		uint16_t transformToFree = 0;
-		uint16_t destroyTo = 0;
-		uint16_t maxTextLen = 0;
-		uint16_t writeOnceItemId = 0;
-		uint16_t transformEquipTo = 0;
-		uint16_t transformDeEquipTo = 0;
-		uint16_t maxItems = 8;
-		uint16_t slotPosition = SLOTP_HAND;
-		uint16_t speed = 0;
-		uint16_t wareId = 0;
+	CombatType_t combatType = COMBAT_NONE;
 
-		MagicEffectClasses magicEffect = CONST_ME_NONE;
-		Direction bedPartnerDir = DIRECTION_NONE;
-		WeaponType_t weaponType = WEAPON_NONE;
-		Ammo_t ammoType = AMMO_NONE;
-		ShootType_t shootType = CONST_ANI_NONE;
-		RaceType_t corpseType = RACE_NONE;
-		FluidTypes_t fluidSource = FLUID_NONE;
+	uint16_t transformToOnUse[2] = {0, 0};
+	uint16_t transformToFree = 0;
+	uint16_t destroyTo = 0;
+	uint16_t maxTextLen = 0;
+	uint16_t writeOnceItemId = 0;
+	uint16_t transformEquipTo = 0;
+	uint16_t transformDeEquipTo = 0;
+	uint16_t maxItems = 8;
+	uint16_t slotPosition = SLOTP_HAND;
+	uint16_t speed = 0;
+	uint16_t wareId = 0;
 
-		uint8_t floorChange = 0;
-		uint8_t alwaysOnTopOrder = 0;
-		uint8_t lightLevel = 0;
-		uint8_t lightColor = 0;
-		uint8_t shootRange = 1;
-		int8_t hitChance = 0;
+	MagicEffectClasses magicEffect = CONST_ME_NONE;
+	Direction bedPartnerDir = DIRECTION_NONE;
+	WeaponType_t weaponType = WEAPON_NONE;
+	Ammo_t ammoType = AMMO_NONE;
+	ShootType_t shootType = CONST_ANI_NONE;
+	RaceType_t corpseType = RACE_NONE;
+	FluidTypes_t fluidSource = FLUID_NONE;
 
-		bool storeItem = false;
-		bool forceUse = false;
-		bool forceSerialize = false;
-		bool hasHeight = false;
-		bool walkStack = true;
-		bool blockSolid = false;
-		bool blockPickupable = false;
-		bool blockProjectile = false;
-		bool blockPathFind = false;
-		bool allowPickupable = false;
-		bool showDuration = false;
-		bool showCharges = false;
-		bool showAttributes = false;
-		bool replaceable = true;
-		bool pickupable = false;
-		bool rotatable = false;
-		bool useable = false;
-		bool moveable = false;
-		bool alwaysOnTop = false;
-		bool canReadText = false;
-		bool canWriteText = false;
-		bool isVertical = false;
-		bool isHorizontal = false;
-		bool isHangable = false;
-		bool allowDistRead = false;
-		bool lookThrough = false;
-		bool stopTime = false;
-		bool showCount = true;
+	uint8_t floorChange = 0;
+	uint8_t alwaysOnTopOrder = 0;
+	uint8_t lightLevel = 0;
+	uint8_t lightColor = 0;
+	uint8_t shootRange = 1;
+	int8_t hitChance = 0;
+
+	bool storeItem = false;
+	bool forceUse = false;
+	bool forceSerialize = false;
+	bool hasHeight = false;
+	bool walkStack = true;
+	bool blockSolid = false;
+	bool blockPickupable = false;
+	bool blockProjectile = false;
+	bool blockPathFind = false;
+	bool allowPickupable = false;
+	bool showDuration = false;
+	bool showCharges = false;
+	bool showAttributes = false;
+	bool replaceable = true;
+	bool pickupable = false;
+	bool rotatable = false;
+	bool useable = false;
+	bool moveable = false;
+	bool alwaysOnTop = false;
+	bool canReadText = false;
+	bool canWriteText = false;
+	bool isVertical = false;
+	bool isHorizontal = false;
+	bool isHangable = false;
+	bool allowDistRead = false;
+	bool lookThrough = false;
+	bool stopTime = false;
+	bool showCount = true;
 };
 
-class Items
-{
-	public:
-		using NameMap = std::unordered_multimap<std::string, uint16_t>;
-		using InventoryVector = std::vector<uint16_t>;
+class Items {
+ public:
+	using NameMap = std::unordered_multimap<std::string, uint16_t>;
+	using InventoryVector = std::vector<uint16_t>;
 
-		Items();
+	Items();
 
-		// non-copyable
-		Items(const Items&) = delete;
-		Items& operator=(const Items&) = delete;
+	// non-copyable
+	Items(const Items&) = delete;
+	Items& operator=(const Items&) = delete;
 
-		bool reload();
-		void clear();
+	bool reload();
+	void clear();
 
-		bool loadFromOtb(const std::string& file);
+	bool loadFromOtb(const std::string& file);
 
-		const ItemType& operator[](size_t id) const {
-			return getItemType(id);
+	const ItemType& operator[](size_t id) const { return getItemType(id); }
+	const ItemType& getItemType(size_t id) const;
+	ItemType& getItemType(size_t id);
+	const ItemType& getItemIdByClientId(uint16_t spriteId) const;
+
+	uint16_t getItemIdByName(const std::string& name);
+
+	uint32_t majorVersion = 0;
+	uint32_t minorVersion = 0;
+	uint32_t buildNumber = 0;
+
+	bool loadFromXml();
+	void parseItemNode(const pugi::xml_node& itemNode, uint16_t id);
+
+	void buildInventoryList();
+	const InventoryVector& getInventory() const { return inventory; }
+
+	size_t size() const { return items.size(); }
+
+	NameMap nameToItems;
+
+ private:
+	std::vector<ItemType> items;
+	InventoryVector inventory;
+	class ClientIdToServerIdMap {
+	 public:
+		ClientIdToServerIdMap() { vec.reserve(30000); }
+
+		void emplace(uint16_t clientId, uint16_t serverId) {
+			if (clientId >= vec.size()) {
+				vec.resize(clientId + 1, 0);
+			}
+			if (vec[clientId] == 0) {
+				vec[clientId] = serverId;
+			}
 		}
-		const ItemType& getItemType(size_t id) const;
-		ItemType& getItemType(size_t id);
-		const ItemType& getItemIdByClientId(uint16_t spriteId) const;
 
-		uint16_t getItemIdByName(const std::string& name);
-
-		uint32_t majorVersion = 0;
-		uint32_t minorVersion = 0;
-		uint32_t buildNumber = 0;
-
-		bool loadFromXml();
-		void parseItemNode(const pugi::xml_node& itemNode, uint16_t id);
-
-		void buildInventoryList();
-		const InventoryVector& getInventory() const {
-			return inventory;
+		uint16_t getServerId(uint16_t clientId) const {
+			uint16_t serverId = 0;
+			if (clientId < vec.size()) {
+				serverId = vec[clientId];
+			}
+			return serverId;
 		}
 
-		size_t size() const {
-			return items.size();
-		}
+		void clear() { vec.clear(); }
 
-		NameMap nameToItems;
-
-	private:
-		std::vector<ItemType> items;
-		InventoryVector inventory;
-		class ClientIdToServerIdMap
-		{
-			public:
-				ClientIdToServerIdMap() {
-					vec.reserve(30000);
-				}
-
-				void emplace(uint16_t clientId, uint16_t serverId) {
-					if (clientId >= vec.size()) {
-						vec.resize(clientId + 1, 0);
-					}
-					if (vec[clientId] == 0) {
-						vec[clientId] = serverId;
-					}
-				}
-
-				uint16_t getServerId(uint16_t clientId) const {
-					uint16_t serverId = 0;
-					if (clientId < vec.size()) {
-						serverId = vec[clientId];
-					}
-					return serverId;
-				}
-
-				void clear() {
-					vec.clear();
-				}
-			private:
-				std::vector<uint16_t> vec;
-		} clientIdToServerIdMap;
+	 private:
+		std::vector<uint16_t> vec;
+	} clientIdToServerIdMap;
 };
 #endif

@@ -29,8 +29,7 @@
 
 static CryptoPP::AutoSeededRandomPool prng;
 
-void RSA::decrypt(char* msg) const
-{
+void RSA::decrypt(char* msg) const {
 	try {
 		CryptoPP::Integer m{reinterpret_cast<uint8_t*>(msg), 128};
 		auto c = pk.CalculateInverse(prng, m);
@@ -43,16 +42,16 @@ void RSA::decrypt(char* msg) const
 static const std::string header = "-----BEGIN RSA PRIVATE KEY-----";
 static const std::string footer = "-----END RSA PRIVATE KEY-----";
 
-void RSA::loadPEM(const std::string& filename)
-{
+void RSA::loadPEM(const std::string& filename) {
 	std::ifstream file{filename};
 
 	if (!file.is_open()) {
 		throw std::runtime_error("Missing file " + filename + ".");
- 	}
+	}
 
 	std::ostringstream oss;
-	for (std::string line; std::getline(file, line); oss << line);
+	for (std::string line; std::getline(file, line); oss << line)
+		;
 	std::string key = oss.str();
 
 	if (key.substr(0, header.size()) != header) {

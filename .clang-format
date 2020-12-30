@@ -1,0 +1,9 @@
+---
+Language: Cpp
+BasedOnStyle:  Google
+TabWidth:        2
+IndentWidth:     2
+UseTab:          Always
+ColumnLimit: 100
+DisableFormat:   false
+Standard: Cpp11

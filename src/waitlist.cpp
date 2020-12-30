@@ -30,10 +30,8 @@ extern Game g_game;
 
 namespace {
 
-struct Wait
-{
-	constexpr Wait(int64_t timeout, uint32_t playerGUID) :
-			timeout(timeout), playerGUID(playerGUID) {}
+struct Wait {
+	constexpr Wait(int64_t timeout, uint32_t playerGUID) : timeout(timeout), playerGUID(playerGUID) {}
 
 	int64_t timeout;
 	uint32_t playerGUID;
@@ -41,8 +39,7 @@ struct Wait
 
 using WaitList = std::list<Wait>;
 
-void cleanupList(WaitList& list)
-{
+void cleanupList(WaitList& list) {
 	int64_t time = OTSYS_TIME();
 
 	auto it = list.begin(), end = list.end();
@@ -55,22 +52,21 @@ void cleanupList(WaitList& list)
 	}
 }
 
-int64_t getTimeout(std::size_t slot)
-{
-	//timeout is set to 15 seconds longer than expected retry attempt
+int64_t getTimeout(std::size_t slot) {
+	// timeout is set to 15 seconds longer than expected retry attempt
 	return WaitingList::getTime(slot) + 15;
 }
 
-} // namespace
+}	// namespace
 
-struct WaitListInfo
-{
+struct WaitListInfo {
 	WaitList priorityWaitList;
 	WaitList waitList;
 
-	std::tuple<WaitList&, WaitList::iterator, WaitList::size_type> findClient(const Player *player) {
+	std::tuple<WaitList&, WaitList::iterator, WaitList::size_type> findClient(const Player* player) {
 		std::size_t slot = 1;
-		for (auto it = priorityWaitList.begin(), end = priorityWaitList.end(); it != end; ++it, ++slot) {
+		for (auto it = priorityWaitList.begin(), end = priorityWaitList.end(); it != end;
+				 ++it, ++slot) {
 			if (it->playerGUID == player->getGUID()) {
 				return std::make_tuple(std::ref(priorityWaitList), it, slot);
 			}
@@ -85,14 +81,12 @@ struct WaitListInfo
 	}
 };
 
-WaitingList& WaitingList::getInstance()
-{
+WaitingList& WaitingList::getInstance() {
 	static WaitingList waitingList;
 	return waitingList;
 }
 
-uint8_t WaitingList::getTime(std::size_t slot)
-{
+uint8_t WaitingList::getTime(std::size_t slot) {
 	if (slot < 5) {
 		return 5;
 	} else if (slot < 10) {
@@ -106,11 +100,11 @@ uint8_t WaitingList::getTime(std::size_t slot)
 	}
 }
 
-std::size_t WaitingList::clientLogin(const Player* player)
-{
+std::size_t WaitingList::clientLogin(const Player* player) {
 	// Currentslot = position in wait list, 0 for direct access
 	std::size_t currentSlot = 0;
-	if (player->hasFlag(PlayerFlag_CanAlwaysLogin) || player->getAccountType() >= ACCOUNT_TYPE_GAMEMASTER) {
+	if (player->hasFlag(PlayerFlag_CanAlwaysLogin) ||
+			player->getAccountType() >= ACCOUNT_TYPE_GAMEMASTER) {
 		return currentSlot;
 	}
 
@@ -118,30 +112,34 @@ std::size_t WaitingList::clientLogin(const Player* player)
 	cleanupList(info->waitList);
 
 	uint32_t maxPlayers = static_cast<uint32_t>(g_config.getNumber(ConfigManager::MAX_PLAYERS));
-	if (maxPlayers == 0 || (info->priorityWaitList.empty() && info->waitList.empty() && g_game.getPlayersOnline() < maxPlayers)) {
+	if (maxPlayers == 0 || (info->priorityWaitList.empty() && info->waitList.empty() &&
+													g_game.getPlayersOnline() < maxPlayers)) {
 		return currentSlot;
 	}
 
 	auto result = info->findClient(player);
 	if (std::get<1>(result) != std::get<0>(result).end()) {
 		currentSlot = std::get<2>(result);
-		// If server has capacity for this client, let him in even though his current slot might be higher than 0.
+		// If server has capacity for this client, let him in even though his current slot might be
+		// higher than 0.
 		if ((g_game.getPlayersOnline() + currentSlot) <= maxPlayers) {
 			std::get<0>(result).erase(std::get<1>(result));
 			return 0;
 		}
 
-		//let them wait a bit longer
+		// let them wait a bit longer
 		std::get<1>(result)->timeout = OTSYS_TIME() + (getTimeout(currentSlot) * 1000);
 		return currentSlot;
 	}
 
 	currentSlot = info->priorityWaitList.size();
 	if (player->isPremium()) {
-		info->priorityWaitList.emplace_back(OTSYS_TIME() + (getTimeout(++currentSlot) * 1000), player->getGUID());
+		info->priorityWaitList.emplace_back(OTSYS_TIME() + (getTimeout(++currentSlot) * 1000),
+																				player->getGUID());
 	} else {
 		currentSlot += info->waitList.size();
-		info->waitList.emplace_back(OTSYS_TIME() + (getTimeout(++currentSlot) * 1000), player->getGUID());
+		info->waitList.emplace_back(OTSYS_TIME() + (getTimeout(++currentSlot) * 1000),
+																player->getGUID());
 	}
 	return currentSlot;
 }

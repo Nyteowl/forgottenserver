@@ -41,14 +41,14 @@ enum RequestedInfo_t : uint16_t {
 	REQUEST_SERVER_SOFTWARE_INFO = 1 << 7,
 };
 
-void ProtocolStatus::onRecvFirstMessage(NetworkMessage& msg)
-{
+void ProtocolStatus::onRecvFirstMessage(NetworkMessage& msg) {
 	uint32_t ip = getIP();
 	if (ip != 0x0100007F) {
 		std::string ipStr = convertIPToString(ip);
 		if (ipStr != g_config.getString(ConfigManager::IP)) {
 			std::map<uint32_t, int64_t>::const_iterator it = ipConnectMap.find(ip);
-			if (it != ipConnectMap.end() && (OTSYS_TIME() < (it->second + g_config.getNumber(ConfigManager::STATUSQUERY_TIMEOUT)))) {
+			if (it != ipConnectMap.end() &&
+					(OTSYS_TIME() < (it->second + g_config.getNumber(ConfigManager::STATUSQUERY_TIMEOUT)))) {
 				disconnect();
 				return;
 			}
@@ -58,25 +58,28 @@ void ProtocolStatus::onRecvFirstMessage(NetworkMessage& msg)
 	ipConnectMap[ip] = OTSYS_TIME();
 
 	switch (msg.getByte()) {
-		//XML info protocol
+		// XML info protocol
 		case 0xFF: {
 			if (msg.getString(4) == "info") {
-				g_dispatcher.addTask(createTask(std::bind(&ProtocolStatus::sendStatusString,
-									  std::static_pointer_cast<ProtocolStatus>(shared_from_this()))));
+				g_dispatcher.addTask(
+						createTask(std::bind(&ProtocolStatus::sendStatusString,
+																 std::static_pointer_cast<ProtocolStatus>(shared_from_this()))));
 				return;
 			}
 			break;
 		}
 
-		//Another ServerInfo protocol
+		// Another ServerInfo protocol
 		case 0x01: {
-			uint16_t requestedInfo = msg.get<uint16_t>(); // only a Byte is necessary, though we could add new info here
+			uint16_t requestedInfo =
+					msg.get<uint16_t>();	// only a Byte is necessary, though we could add new info here
 			std::string characterName;
 			if (requestedInfo & REQUEST_PLAYER_STATUS_INFO) {
 				characterName = msg.getString();
 			}
-			g_dispatcher.addTask(createTask(std::bind(&ProtocolStatus::sendInfo, std::static_pointer_cast<ProtocolStatus>(shared_from_this()),
-								  requestedInfo, characterName)));
+			g_dispatcher.addTask(createTask(std::bind(
+					&ProtocolStatus::sendInfo, std::static_pointer_cast<ProtocolStatus>(shared_from_this()),
+					requestedInfo, characterName)));
 			return;
 		}
 
@@ -86,8 +89,7 @@ void ProtocolStatus::onRecvFirstMessage(NetworkMessage& msg)
 	disconnect();
 }
 
-void ProtocolStatus::sendStatusString()
-{
+void ProtocolStatus::sendStatusString() {
 	auto output = OutputMessagePool::getOutputMessage();
 
 	setRawMessages(true);
@@ -104,8 +106,10 @@ void ProtocolStatus::sendStatusString()
 	uint64_t uptime = (OTSYS_TIME() - ProtocolStatus::start) / 1000;
 	serverinfo.append_attribute("uptime") = std::to_string(uptime).c_str();
 	serverinfo.append_attribute("ip") = g_config.getString(ConfigManager::IP).c_str();
-	serverinfo.append_attribute("servername") = g_config.getString(ConfigManager::SERVER_NAME).c_str();
-	serverinfo.append_attribute("port") = std::to_string(g_config.getNumber(ConfigManager::LOGIN_PORT)).c_str();
+	serverinfo.append_attribute("servername") =
+			g_config.getString(ConfigManager::SERVER_NAME).c_str();
+	serverinfo.append_attribute("port") =
+			std::to_string(g_config.getNumber(ConfigManager::LOGIN_PORT)).c_str();
 	serverinfo.append_attribute("location") = g_config.getString(ConfigManager::LOCATION).c_str();
 	serverinfo.append_attribute("url") = g_config.getString(ConfigManager::URL).c_str();
 	serverinfo.append_attribute("server") = STATUS_SERVER_NAME;
@@ -118,7 +122,8 @@ void ProtocolStatus::sendStatusString()
 
 	pugi::xml_node players = tsqp.append_child("players");
 	players.append_attribute("online") = std::to_string(g_game.getPlayersOnline()).c_str();
-	players.append_attribute("max") = std::to_string(g_config.getNumber(ConfigManager::MAX_PLAYERS)).c_str();
+	players.append_attribute("max") =
+			std::to_string(g_config.getNumber(ConfigManager::MAX_PLAYERS)).c_str();
 	players.append_attribute("peak") = std::to_string(g_game.getPlayersRecord()).c_str();
 
 	pugi::xml_node monsters = tsqp.append_child("monsters");
@@ -128,11 +133,16 @@ void ProtocolStatus::sendStatusString()
 	npcs.append_attribute("total") = std::to_string(g_game.getNpcsOnline()).c_str();
 
 	pugi::xml_node rates = tsqp.append_child("rates");
-	rates.append_attribute("experience") = std::to_string(g_config.getNumber(ConfigManager::RATE_EXPERIENCE)).c_str();
-	rates.append_attribute("skill") = std::to_string(g_config.getNumber(ConfigManager::RATE_SKILL)).c_str();
-	rates.append_attribute("loot") = std::to_string(g_config.getNumber(ConfigManager::RATE_LOOT)).c_str();
-	rates.append_attribute("magic") = std::to_string(g_config.getNumber(ConfigManager::RATE_MAGIC)).c_str();
-	rates.append_attribute("spawn") = std::to_string(g_config.getNumber(ConfigManager::RATE_SPAWN)).c_str();
+	rates.append_attribute("experience") =
+			std::to_string(g_config.getNumber(ConfigManager::RATE_EXPERIENCE)).c_str();
+	rates.append_attribute("skill") =
+			std::to_string(g_config.getNumber(ConfigManager::RATE_SKILL)).c_str();
+	rates.append_attribute("loot") =
+			std::to_string(g_config.getNumber(ConfigManager::RATE_LOOT)).c_str();
+	rates.append_attribute("magic") =
+			std::to_string(g_config.getNumber(ConfigManager::RATE_MAGIC)).c_str();
+	rates.append_attribute("spawn") =
+			std::to_string(g_config.getNumber(ConfigManager::RATE_SPAWN)).c_str();
 
 	pugi::xml_node map = tsqp.append_child("map");
 	map.append_attribute("name") = g_config.getString(ConfigManager::MAP_NAME).c_str();
@@ -155,8 +165,7 @@ void ProtocolStatus::sendStatusString()
 	disconnect();
 }
 
-void ProtocolStatus::sendInfo(uint16_t requestedInfo, const std::string& characterName)
-{
+void ProtocolStatus::sendInfo(uint16_t requestedInfo, const std::string& characterName) {
 	auto output = OutputMessagePool::getOutputMessage();
 
 	if (requestedInfo & REQUEST_BASIC_SERVER_INFO) {
@@ -198,7 +207,7 @@ void ProtocolStatus::sendInfo(uint16_t requestedInfo, const std::string& charact
 	}
 
 	if (requestedInfo & REQUEST_EXT_PLAYERS_INFO) {
-		output->addByte(0x21); // players info - online players list
+		output->addByte(0x21);	// players info - online players list
 
 		const auto& players = g_game.getPlayers();
 		output->add<uint32_t>(players.size());
@@ -209,7 +218,7 @@ void ProtocolStatus::sendInfo(uint16_t requestedInfo, const std::string& charact
 	}
 
 	if (requestedInfo & REQUEST_PLAYER_STATUS_INFO) {
-		output->addByte(0x22); // players info - online status info of a player
+		output->addByte(0x22);	// players info - online status info of a player
 		if (g_game.getPlayerByName(characterName) != nullptr) {
 			output->addByte(0x01);
 		} else {
@@ -218,7 +227,7 @@ void ProtocolStatus::sendInfo(uint16_t requestedInfo, const std::string& charact
 	}
 
 	if (requestedInfo & REQUEST_SERVER_SOFTWARE_INFO) {
-		output->addByte(0x23); // server software info
+		output->addByte(0x23);	// server software info
 		output->addString(STATUS_SERVER_NAME);
 		output->addString(STATUS_SERVER_VERSION);
 		output->addString(CLIENT_VERSION_STR);

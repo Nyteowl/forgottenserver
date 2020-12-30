@@ -26,14 +26,9 @@
 
 #include <set>
 
-Events::Events() :
-	scriptInterface("Event Interface")
-{
-	scriptInterface.initState();
-}
+Events::Events() : scriptInterface("Event Interface") { scriptInterface.initState(); }
 
-bool Events::load()
-{
+bool Events::load() {
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file("data/events/events.xml");
 	if (!result) {
@@ -54,7 +49,8 @@ bool Events::load()
 		if (res.second) {
 			const std::string& lowercase = asLowerCaseString(className);
 			if (scriptInterface.loadFile("data/events/scripts/" + lowercase + ".lua") != 0) {
-				std::cout << "[Warning - Events::load] Can not load script: " << lowercase << ".lua" << std::endl;
+				std::cout << "[Warning - Events::load] Can not load script: " << lowercase << ".lua"
+									<< std::endl;
 				std::cout << scriptInterface.getLastLuaError() << std::endl;
 			}
 		}
@@ -71,7 +67,8 @@ bool Events::load()
 			} else if (methodName == "onHear") {
 				info.creatureOnHear = event;
 			} else {
-				std::cout << "[Warning - Events::load] Unknown creature method: " << methodName << std::endl;
+				std::cout << "[Warning - Events::load] Unknown creature method: " << methodName
+									<< std::endl;
 			}
 		} else if (className == "Party") {
 			if (methodName == "onJoin") {
@@ -141,8 +138,8 @@ bool Events::load()
 }
 
 // Monster
-bool Events::eventMonsterOnSpawn(Monster* monster, const Position& position, bool startup, bool artificial)
-{
+bool Events::eventMonsterOnSpawn(Monster* monster, const Position& position, bool startup,
+																 bool artificial) {
 	// Monster:onSpawn(position, startup, artificial)
 	if (info.monsterOnSpawn == -1) {
 		return true;
@@ -169,8 +166,7 @@ bool Events::eventMonsterOnSpawn(Monster* monster, const Position& position, boo
 }
 
 // Creature
-bool Events::eventCreatureOnChangeOutfit(Creature* creature, const Outfit_t& outfit)
-{
+bool Events::eventCreatureOnChangeOutfit(Creature* creature, const Outfit_t& outfit) {
 	// Creature:onChangeOutfit(outfit) or Creature.onChangeOutfit(self, outfit)
 	if (info.creatureOnChangeOutfit == -1) {
 		return true;
@@ -195,8 +191,7 @@ bool Events::eventCreatureOnChangeOutfit(Creature* creature, const Outfit_t& out
 	return scriptInterface.callFunction(2);
 }
 
-ReturnValue Events::eventCreatureOnAreaCombat(Creature* creature, Tile* tile, bool aggressive)
-{
+ReturnValue Events::eventCreatureOnAreaCombat(Creature* creature, Tile* tile, bool aggressive) {
 	// Creature:onAreaCombat(tile, aggressive) or Creature.onAreaCombat(self, tile, aggressive)
 	if (info.creatureOnAreaCombat == -1) {
 		return RETURNVALUE_NOERROR;
@@ -238,8 +233,7 @@ ReturnValue Events::eventCreatureOnAreaCombat(Creature* creature, Tile* tile, bo
 	return returnValue;
 }
 
-ReturnValue Events::eventCreatureOnTargetCombat(Creature* creature, Creature* target)
-{
+ReturnValue Events::eventCreatureOnTargetCombat(Creature* creature, Creature* target) {
 	// Creature:onTargetCombat(target) or Creature.onTargetCombat(self, target)
 	if (info.creatureOnTargetCombat == -1) {
 		return RETURNVALUE_NOERROR;
@@ -279,8 +273,8 @@ ReturnValue Events::eventCreatureOnTargetCombat(Creature* creature, Creature* ta
 	return returnValue;
 }
 
-void Events::eventCreatureOnHear(Creature* creature, Creature* speaker, const std::string& words, SpeakClasses type)
-{
+void Events::eventCreatureOnHear(Creature* creature, Creature* speaker, const std::string& words,
+																 SpeakClasses type) {
 	// Creature:onHear(speaker, words, type)
 	if (info.creatureOnHear == -1) {
 		return;
@@ -310,8 +304,7 @@ void Events::eventCreatureOnHear(Creature* creature, Creature* speaker, const st
 }
 
 // Party
-bool Events::eventPartyOnJoin(Party* party, Player* player)
-{
+bool Events::eventPartyOnJoin(Party* party, Player* player) {
 	// Party:onJoin(player) or Party.onJoin(self, player)
 	if (info.partyOnJoin == -1) {
 		return true;
@@ -337,8 +330,7 @@ bool Events::eventPartyOnJoin(Party* party, Player* player)
 	return scriptInterface.callFunction(2);
 }
 
-bool Events::eventPartyOnLeave(Party* party, Player* player)
-{
+bool Events::eventPartyOnLeave(Party* party, Player* player) {
 	// Party:onLeave(player) or Party.onLeave(self, player)
 	if (info.partyOnLeave == -1) {
 		return true;
@@ -364,8 +356,7 @@ bool Events::eventPartyOnLeave(Party* party, Player* player)
 	return scriptInterface.callFunction(2);
 }
 
-bool Events::eventPartyOnDisband(Party* party)
-{
+bool Events::eventPartyOnDisband(Party* party) {
 	// Party:onDisband() or Party.onDisband(self)
 	if (info.partyOnDisband == -1) {
 		return true;
@@ -388,8 +379,7 @@ bool Events::eventPartyOnDisband(Party* party)
 	return scriptInterface.callFunction(1);
 }
 
-void Events::eventPartyOnShareExperience(Party* party, uint64_t& exp)
-{
+void Events::eventPartyOnShareExperience(Party* party, uint64_t& exp) {
 	// Party:onShareExperience(exp) or Party.onShareExperience(self, exp)
 	if (info.partyOnShareExperience == -1) {
 		return;
@@ -422,8 +412,7 @@ void Events::eventPartyOnShareExperience(Party* party, uint64_t& exp)
 }
 
 // Player
-bool Events::eventPlayerOnBrowseField(Player* player, const Position& position)
-{
+bool Events::eventPlayerOnBrowseField(Player* player, const Position& position) {
 	// Player:onBrowseField(position) or Player.onBrowseField(self, position)
 	if (info.playerOnBrowseField == -1) {
 		return true;
@@ -448,8 +437,8 @@ bool Events::eventPlayerOnBrowseField(Player* player, const Position& position)
 	return scriptInterface.callFunction(2);
 }
 
-void Events::eventPlayerOnLook(Player* player, const Position& position, Thing* thing, uint8_t stackpos, int32_t lookDistance)
-{
+void Events::eventPlayerOnLook(Player* player, const Position& position, Thing* thing,
+															 uint8_t stackpos, int32_t lookDistance) {
 	// Player:onLook(thing, position, distance) or Player.onLook(self, thing, position, distance)
 	if (info.playerOnLook == -1) {
 		return;
@@ -485,9 +474,10 @@ void Events::eventPlayerOnLook(Player* player, const Position& position, Thing* 
 	scriptInterface.callVoidFunction(4);
 }
 
-void Events::eventPlayerOnLookInBattleList(Player* player, Creature* creature, int32_t lookDistance)
-{
-	// Player:onLookInBattleList(creature, position, distance) or Player.onLookInBattleList(self, creature, position, distance)
+void Events::eventPlayerOnLookInBattleList(Player* player, Creature* creature,
+																					 int32_t lookDistance) {
+	// Player:onLookInBattleList(creature, position, distance) or Player.onLookInBattleList(self,
+	// creature, position, distance)
 	if (info.playerOnLookInBattleList == -1) {
 		return;
 	}
@@ -514,9 +504,10 @@ void Events::eventPlayerOnLookInBattleList(Player* player, Creature* creature, i
 	scriptInterface.callVoidFunction(3);
 }
 
-void Events::eventPlayerOnLookInTrade(Player* player, Player* partner, Item* item, int32_t lookDistance)
-{
-	// Player:onLookInTrade(partner, item, distance) or Player.onLookInTrade(self, partner, item, distance)
+void Events::eventPlayerOnLookInTrade(Player* player, Player* partner, Item* item,
+																			int32_t lookDistance) {
+	// Player:onLookInTrade(partner, item, distance) or Player.onLookInTrade(self, partner, item,
+	// distance)
 	if (info.playerOnLookInTrade == -1) {
 		return;
 	}
@@ -546,9 +537,10 @@ void Events::eventPlayerOnLookInTrade(Player* player, Player* partner, Item* ite
 	scriptInterface.callVoidFunction(4);
 }
 
-bool Events::eventPlayerOnLookInShop(Player* player, const ItemType* itemType, uint8_t count, const std::string& description)
-{
-	// Player:onLookInShop(itemType, count, description) or Player.onLookInShop(self, itemType, count, description)
+bool Events::eventPlayerOnLookInShop(Player* player, const ItemType* itemType, uint8_t count,
+																		 const std::string& description) {
+	// Player:onLookInShop(itemType, count, description) or Player.onLookInShop(self, itemType, count,
+	// description)
 	if (info.playerOnLookInShop == -1) {
 		return true;
 	}
@@ -576,9 +568,11 @@ bool Events::eventPlayerOnLookInShop(Player* player, const ItemType* itemType, u
 	return scriptInterface.callFunction(4);
 }
 
-bool Events::eventPlayerOnMoveItem(Player* player, Item* item, uint16_t count, const Position& fromPosition, const Position& toPosition, Cylinder* fromCylinder, Cylinder* toCylinder)
-{
-	// Player:onMoveItem(item, count, fromPosition, toPosition) or Player.onMoveItem(self, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
+bool Events::eventPlayerOnMoveItem(Player* player, Item* item, uint16_t count,
+																	 const Position& fromPosition, const Position& toPosition,
+																	 Cylinder* fromCylinder, Cylinder* toCylinder) {
+	// Player:onMoveItem(item, count, fromPosition, toPosition) or Player.onMoveItem(self, item,
+	// count, fromPosition, toPosition, fromCylinder, toCylinder)
 	if (info.playerOnMoveItem == -1) {
 		return true;
 	}
@@ -610,9 +604,11 @@ bool Events::eventPlayerOnMoveItem(Player* player, Item* item, uint16_t count, c
 	return scriptInterface.callFunction(7);
 }
 
-void Events::eventPlayerOnItemMoved(Player* player, Item* item, uint16_t count, const Position& fromPosition, const Position& toPosition, Cylinder* fromCylinder, Cylinder* toCylinder)
-{
-	// Player:onItemMoved(item, count, fromPosition, toPosition) or Player.onItemMoved(self, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
+void Events::eventPlayerOnItemMoved(Player* player, Item* item, uint16_t count,
+																		const Position& fromPosition, const Position& toPosition,
+																		Cylinder* fromCylinder, Cylinder* toCylinder) {
+	// Player:onItemMoved(item, count, fromPosition, toPosition) or Player.onItemMoved(self, item,
+	// count, fromPosition, toPosition, fromCylinder, toCylinder)
 	if (info.playerOnItemMoved == -1) {
 		return;
 	}
@@ -644,9 +640,10 @@ void Events::eventPlayerOnItemMoved(Player* player, Item* item, uint16_t count, 
 	scriptInterface.callVoidFunction(7);
 }
 
-bool Events::eventPlayerOnMoveCreature(Player* player, Creature* creature, const Position& fromPosition, const Position& toPosition)
-{
-	// Player:onMoveCreature(creature, fromPosition, toPosition) or Player.onMoveCreature(self, creature, fromPosition, toPosition)
+bool Events::eventPlayerOnMoveCreature(Player* player, Creature* creature,
+																			 const Position& fromPosition, const Position& toPosition) {
+	// Player:onMoveCreature(creature, fromPosition, toPosition) or Player.onMoveCreature(self,
+	// creature, fromPosition, toPosition)
 	if (info.playerOnMoveCreature == -1) {
 		return true;
 	}
@@ -674,15 +671,18 @@ bool Events::eventPlayerOnMoveCreature(Player* player, Creature* creature, const
 	return scriptInterface.callFunction(4);
 }
 
-void Events::eventPlayerOnReportRuleViolation(Player* player, const std::string& targetName, uint8_t reportType, uint8_t reportReason, const std::string& comment, const std::string& translation)
-{
+void Events::eventPlayerOnReportRuleViolation(Player* player, const std::string& targetName,
+																							uint8_t reportType, uint8_t reportReason,
+																							const std::string& comment,
+																							const std::string& translation) {
 	// Player:onReportRuleViolation(targetName, reportType, reportReason, comment, translation)
 	if (info.playerOnReportRuleViolation == -1) {
 		return;
 	}
 
 	if (!scriptInterface.reserveScriptEnv()) {
-		std::cout << "[Error - Events::eventPlayerOnReportRuleViolation] Call stack overflow" << std::endl;
+		std::cout << "[Error - Events::eventPlayerOnReportRuleViolation] Call stack overflow"
+							<< std::endl;
 		return;
 	}
 
@@ -706,8 +706,8 @@ void Events::eventPlayerOnReportRuleViolation(Player* player, const std::string&
 	scriptInterface.callVoidFunction(6);
 }
 
-bool Events::eventPlayerOnReportBug(Player* player, const std::string& message, const Position& position, uint8_t category)
-{
+bool Events::eventPlayerOnReportBug(Player* player, const std::string& message,
+																		const Position& position, uint8_t category) {
 	// Player:onReportBug(message, position, category)
 	if (info.playerOnReportBug == -1) {
 		return true;
@@ -734,8 +734,7 @@ bool Events::eventPlayerOnReportBug(Player* player, const std::string& message, 
 	return scriptInterface.callFunction(4);
 }
 
-bool Events::eventPlayerOnTurn(Player* player, Direction direction)
-{
+bool Events::eventPlayerOnTurn(Player* player, Direction direction) {
 	// Player:onTurn(direction) or Player.onTurn(self, direction)
 	if (info.playerOnTurn == -1) {
 		return true;
@@ -760,8 +759,7 @@ bool Events::eventPlayerOnTurn(Player* player, Direction direction)
 	return scriptInterface.callFunction(2);
 }
 
-bool Events::eventPlayerOnTradeRequest(Player* player, Player* target, Item* item)
-{
+bool Events::eventPlayerOnTradeRequest(Player* player, Player* target, Item* item) {
 	// Player:onTradeRequest(target, item)
 	if (info.playerOnTradeRequest == -1) {
 		return true;
@@ -790,8 +788,8 @@ bool Events::eventPlayerOnTradeRequest(Player* player, Player* target, Item* ite
 	return scriptInterface.callFunction(3);
 }
 
-bool Events::eventPlayerOnTradeAccept(Player* player, Player* target, Item* item, Item* targetItem)
-{
+bool Events::eventPlayerOnTradeAccept(Player* player, Player* target, Item* item,
+																			Item* targetItem) {
 	// Player:onTradeAccept(target, item, targetItem)
 	if (info.playerOnTradeAccept == -1) {
 		return true;
@@ -823,8 +821,8 @@ bool Events::eventPlayerOnTradeAccept(Player* player, Player* target, Item* item
 	return scriptInterface.callFunction(4);
 }
 
-void Events::eventPlayerOnTradeCompleted(Player* player, Player* target, Item* item, Item* targetItem, bool isSuccess)
-{
+void Events::eventPlayerOnTradeCompleted(Player* player, Player* target, Item* item,
+																				 Item* targetItem, bool isSuccess) {
 	// Player:onTradeCompleted(target, item, targetItem, isSuccess)
 	if (info.playerOnTradeCompleted == -1) {
 		return;
@@ -858,8 +856,8 @@ void Events::eventPlayerOnTradeCompleted(Player* player, Player* target, Item* i
 	return scriptInterface.callVoidFunction(5);
 }
 
-void Events::eventPlayerOnGainExperience(Player* player, Creature* source, uint64_t& exp, uint64_t rawExp)
-{
+void Events::eventPlayerOnGainExperience(Player* player, Creature* source, uint64_t& exp,
+																				 uint64_t rawExp) {
 	// Player:onGainExperience(source, exp, rawExp)
 	// rawExp gives the original exp which is not multiplied
 	if (info.playerOnGainExperience == -1) {
@@ -900,8 +898,7 @@ void Events::eventPlayerOnGainExperience(Player* player, Creature* source, uint6
 	scriptInterface.resetScriptEnv();
 }
 
-void Events::eventPlayerOnLoseExperience(Player* player, uint64_t& exp)
-{
+void Events::eventPlayerOnLoseExperience(Player* player, uint64_t& exp) {
 	// Player:onLoseExperience(exp)
 	if (info.playerOnLoseExperience == -1) {
 		return;
@@ -933,8 +930,7 @@ void Events::eventPlayerOnLoseExperience(Player* player, uint64_t& exp)
 	scriptInterface.resetScriptEnv();
 }
 
-void Events::eventPlayerOnGainSkillTries(Player* player, skills_t skill, uint64_t& tries)
-{
+void Events::eventPlayerOnGainSkillTries(Player* player, skills_t skill, uint64_t& tries) {
 	// Player:onGainSkillTries(skill, tries)
 	if (info.playerOnGainSkillTries == -1) {
 		return;
@@ -967,8 +963,7 @@ void Events::eventPlayerOnGainSkillTries(Player* player, skills_t skill, uint64_
 	scriptInterface.resetScriptEnv();
 }
 
-void Events::eventPlayerOnWrapItem(Player* player, Item* item)
-{
+void Events::eventPlayerOnWrapItem(Player* player, Item* item) {
 	// Player:onWrapItem(item)
 	if (info.playerOnWrapItem == -1) {
 		return;
@@ -994,8 +989,7 @@ void Events::eventPlayerOnWrapItem(Player* player, Item* item)
 	scriptInterface.callVoidFunction(2);
 }
 
-void Events::eventMonsterOnDropLoot(Monster* monster, Container* corpse)
-{
+void Events::eventMonsterOnDropLoot(Monster* monster, Container* corpse) {
 	// Monster:onDropLoot(corpse)
 	if (info.monsterOnDropLoot == -1) {
 		return;
@@ -1020,4 +1014,3 @@ void Events::eventMonsterOnDropLoot(Monster* monster, Container* corpse)
 
 	return scriptInterface.callVoidFunction(2);
 }
-

@@ -23,8 +23,7 @@
 
 StoreInbox::StoreInbox(uint16_t type) : Container(type, 20, true, true) {}
 
-ReturnValue StoreInbox::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t, Creature*) const
-{
+ReturnValue StoreInbox::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t, Creature*) const {
 	const Item* item = thing.getItem();
 	if (!item) {
 		return RETURNVALUE_NOTPOSSIBLE;
@@ -50,17 +49,16 @@ ReturnValue StoreInbox::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t
 	return RETURNVALUE_NOERROR;
 }
 
-void StoreInbox::postAddNotification(Thing* thing, const Cylinder* oldParent, int32_t index, cylinderlink_t)
-{
+void StoreInbox::postAddNotification(Thing* thing, const Cylinder* oldParent, int32_t index,
+																		 cylinderlink_t) {
 	if (parent != nullptr) {
 		parent->postAddNotification(thing, oldParent, index, LINK_PARENT);
 	}
 }
 
-void StoreInbox::postRemoveNotification(Thing* thing, const Cylinder* newParent, int32_t index, cylinderlink_t)
-{
+void StoreInbox::postRemoveNotification(Thing* thing, const Cylinder* newParent, int32_t index,
+																				cylinderlink_t) {
 	if (parent != nullptr) {
 		parent->postRemoveNotification(thing, newParent, index, LINK_PARENT);
 	}
 }
-

@@ -26,8 +26,7 @@
 
 extern Game g_game;
 
-void ProtocolOld::disconnectClient(const std::string& message)
-{
+void ProtocolOld::disconnectClient(const std::string& message) {
 	auto output = OutputMessagePool::getOutputMessage();
 	output->addByte(0x0A);
 	output->addString(message);
@@ -36,14 +35,13 @@ void ProtocolOld::disconnectClient(const std::string& message)
 	disconnect();
 }
 
-void ProtocolOld::onRecvFirstMessage(NetworkMessage& msg)
-{
+void ProtocolOld::onRecvFirstMessage(NetworkMessage& msg) {
 	if (g_game.getGameState() == GAME_STATE_SHUTDOWN) {
 		disconnect();
 		return;
 	}
 
-	/*uint16_t clientOS =*/ msg.get<uint16_t>();
+	/*uint16_t clientOS =*/msg.get<uint16_t>();
 	uint16_t version = msg.get<uint16_t>();
 	msg.skipBytes(12);
 

@@ -23,20 +23,14 @@
 #include "talkaction.h"
 #include "pugicast.h"
 
-TalkActions::TalkActions()
-	: scriptInterface("TalkAction Interface")
-{
+TalkActions::TalkActions() : scriptInterface("TalkAction Interface") {
 	scriptInterface.initState();
 }
 
-TalkActions::~TalkActions()
-{
-	clear(false);
-}
+TalkActions::~TalkActions() { clear(false); }
 
-void TalkActions::clear(bool fromLua)
-{
-	for (auto it = talkActions.begin(); it != talkActions.end(); ) {
+void TalkActions::clear(bool fromLua) {
+	for (auto it = talkActions.begin(); it != talkActions.end();) {
 		if (fromLua == it->second.fromLua) {
 			it = talkActions.erase(it);
 		} else {
@@ -47,27 +41,20 @@ void TalkActions::clear(bool fromLua)
 	reInitState(fromLua);
 }
 
-LuaScriptInterface& TalkActions::getScriptInterface()
-{
-	return scriptInterface;
-}
+LuaScriptInterface& TalkActions::getScriptInterface() { return scriptInterface; }
 
-std::string TalkActions::getScriptBaseName() const
-{
-	return "talkactions";
-}
+std::string TalkActions::getScriptBaseName() const { return "talkactions"; }
 
-Event_ptr TalkActions::getEvent(const std::string& nodeName)
-{
+Event_ptr TalkActions::getEvent(const std::string& nodeName) {
 	if (strcasecmp(nodeName.c_str(), "talkaction") != 0) {
 		return nullptr;
 	}
 	return Event_ptr(new TalkAction(&scriptInterface));
 }
 
-bool TalkActions::registerEvent(Event_ptr event, const pugi::xml_node&)
-{
-	TalkAction_ptr talkAction{static_cast<TalkAction*>(event.release())}; // event is guaranteed to be a TalkAction
+bool TalkActions::registerEvent(Event_ptr event, const pugi::xml_node&) {
+	TalkAction_ptr talkAction{
+			static_cast<TalkAction*>(event.release())};	// event is guaranteed to be a TalkAction
 	std::vector<std::string> words = talkAction->getWordsMap();
 
 	for (size_t i = 0; i < words.size(); i++) {
@@ -81,9 +68,8 @@ bool TalkActions::registerEvent(Event_ptr event, const pugi::xml_node&)
 	return true;
 }
 
-bool TalkActions::registerLuaEvent(TalkAction* event)
-{
-	TalkAction_ptr talkAction{ event };
+bool TalkActions::registerLuaEvent(TalkAction* event) {
+	TalkAction_ptr talkAction{event};
 	std::vector<std::string> words = talkAction->getWordsMap();
 
 	for (size_t i = 0; i < words.size(); i++) {
@@ -97,13 +83,14 @@ bool TalkActions::registerLuaEvent(TalkAction* event)
 	return true;
 }
 
-TalkActionResult_t TalkActions::playerSaySpell(Player* player, SpeakClasses type, const std::string& words) const
-{
+TalkActionResult_t TalkActions::playerSaySpell(Player* player, SpeakClasses type,
+																							 const std::string& words) const {
 	size_t wordsLength = words.length();
-	for (auto it = talkActions.begin(); it != talkActions.end(); ) {
+	for (auto it = talkActions.begin(); it != talkActions.end();) {
 		const std::string& talkactionWords = it->first;
 		size_t talkactionLength = talkactionWords.length();
-		if (wordsLength < talkactionLength || strncasecmp(words.c_str(), talkactionWords.c_str(), talkactionLength) != 0) {
+		if (wordsLength < talkactionLength ||
+				strncasecmp(words.c_str(), talkactionWords.c_str(), talkactionLength) != 0) {
 			++it;
 			continue;
 		}
@@ -139,11 +126,11 @@ TalkActionResult_t TalkActions::playerSaySpell(Player* player, SpeakClasses type
 	return TALKACTION_CONTINUE;
 }
 
-bool TalkAction::configureEvent(const pugi::xml_node& node)
-{
+bool TalkAction::configureEvent(const pugi::xml_node& node) {
 	pugi::xml_attribute wordsAttribute = node.attribute("words");
 	if (!wordsAttribute) {
-		std::cout << "[Error - TalkAction::configureEvent] Missing words for talk action or spell" << std::endl;
+		std::cout << "[Error - TalkAction::configureEvent] Missing words for talk action or spell"
+							<< std::endl;
 		return false;
 	}
 
@@ -158,14 +145,11 @@ bool TalkAction::configureEvent(const pugi::xml_node& node)
 	return true;
 }
 
-std::string TalkAction::getScriptEventName() const
-{
-	return "onSay";
-}
+std::string TalkAction::getScriptEventName() const { return "onSay"; }
 
-bool TalkAction::executeSay(Player* player, const std::string& words, const std::string& param, SpeakClasses type) const
-{
-	//onSay(player, words, param, type)
+bool TalkAction::executeSay(Player* player, const std::string& words, const std::string& param,
+														SpeakClasses type) const {
+	// onSay(player, words, param, type)
 	if (!scriptInterface->reserveScriptEnv()) {
 		std::cout << "[Error - TalkAction::executeSay] Call stack overflow" << std::endl;
 		return false;

@@ -173,7 +173,7 @@ enum ShootType_t : uint8_t {
 	CONST_ANI_SIMPLEARROW = 54,
 
 	// for internal use, don't send to client
-	CONST_ANI_WEAPONTYPE = 0xFE, // 254
+	CONST_ANI_WEAPONTYPE = 0xFE,	// 254
 };
 
 enum SpeakClasses : uint8_t {
@@ -187,9 +187,9 @@ enum SpeakClasses : uint8_t {
 	TALKTYPE_PRIVATE_NP = 10,
 	TALKTYPE_PRIVATE_PN = 12,
 	TALKTYPE_BROADCAST = 13,
-	TALKTYPE_CHANNEL_R1 = 14, //red - #c text
-	TALKTYPE_PRIVATE_RED_FROM = 15, //@name@text
-	TALKTYPE_PRIVATE_RED_TO = 16, //@name@text
+	TALKTYPE_CHANNEL_R1 = 14,	// red - #c text
+	TALKTYPE_PRIVATE_RED_FROM = 15,	//@name@text
+	TALKTYPE_PRIVATE_RED_TO = 16,		 //@name@text
 	TALKTYPE_MONSTER_SAY = 36,
 	TALKTYPE_MONSTER_YELL = 37,
 };
@@ -201,10 +201,10 @@ enum MessageClasses : uint8_t {
 
 	MESSAGE_STATUS_DEFAULT = 17, /*White message at the bottom of the game window and in the console*/
 	MESSAGE_STATUS_WARNING = 18, /*Red message in game window and in the console*/
-	MESSAGE_EVENT_ADVANCE = 19, /*White message in game window and in the console*/
+	MESSAGE_EVENT_ADVANCE = 19,	/*White message in game window and in the console*/
 
 	MESSAGE_STATUS_SMALL = 21, /*White message at the bottom of the game window"*/
-	MESSAGE_INFO_DESCR = 22, /*Green message in game window and in the console*/
+	MESSAGE_INFO_DESCR = 22,	 /*Green message in game window and in the console*/
 	MESSAGE_DAMAGE_DEALT = 23,
 	MESSAGE_DAMAGE_RECEIVED = 24,
 	MESSAGE_HEALED = 25,
@@ -215,11 +215,11 @@ enum MessageClasses : uint8_t {
 	MESSAGE_EVENT_DEFAULT = 30, /*White message at the bottom of the game window and in the console*/
 	MESSAGE_LOOT = 31,
 
-	MESSAGE_GUILD = 33, /*White message in channel (+ channelId)*/
-	MESSAGE_PARTY_MANAGEMENT = 34, /*White message in channel (+ channelId)*/
-	MESSAGE_PARTY = 35, /*White message in channel (+ channelId)*/
-	MESSAGE_EVENT_ORANGE = 36, /*Orange message in the console*/
-	MESSAGE_STATUS_CONSOLE_ORANGE = 37,  /*Orange message in the console*/
+	MESSAGE_GUILD = 33,									/*White message in channel (+ channelId)*/
+	MESSAGE_PARTY_MANAGEMENT = 34,			/*White message in channel (+ channelId)*/
+	MESSAGE_PARTY = 35,									/*White message in channel (+ channelId)*/
+	MESSAGE_EVENT_ORANGE = 36,					/*Orange message in the console*/
+	MESSAGE_STATUS_CONSOLE_ORANGE = 37, /*Orange message in the console*/
 };
 
 enum FluidColors_t : uint8_t {
@@ -262,37 +262,14 @@ enum FluidTypes_t : uint8_t {
 };
 
 const uint8_t reverseFluidMap[] = {
-	FLUID_EMPTY,
-	FLUID_WATER,
-	FLUID_MANA,
-	FLUID_BEER,
-	FLUID_EMPTY,
-	FLUID_BLOOD,
-	FLUID_SLIME,
-	FLUID_EMPTY,
-	FLUID_LEMONADE,
-	FLUID_MILK,
+		FLUID_EMPTY, FLUID_WATER, FLUID_MANA,	FLUID_BEER,		 FLUID_EMPTY,
+		FLUID_BLOOD, FLUID_SLIME, FLUID_EMPTY, FLUID_LEMONADE, FLUID_MILK,
 };
 
 const uint8_t clientToServerFluidMap[] = {
-	FLUID_EMPTY,
-	FLUID_WATER,
-	FLUID_MANA,
-	FLUID_BEER,
-	FLUID_MUD,
-	FLUID_BLOOD,
-	FLUID_SLIME,
-	FLUID_RUM,
-	FLUID_LEMONADE,
-	FLUID_MILK,
-	FLUID_WINE,
-	FLUID_LIFE,
-	FLUID_URINE,
-	FLUID_OIL,
-	FLUID_FRUITJUICE,
-	FLUID_COCONUTMILK,
-	FLUID_TEA,
-	FLUID_MEAD,
+		FLUID_EMPTY, FLUID_WATER, FLUID_MANA,				FLUID_BEER,				 FLUID_MUD,	FLUID_BLOOD,
+		FLUID_SLIME, FLUID_RUM,		FLUID_LEMONADE,		FLUID_MILK,				 FLUID_WINE, FLUID_LIFE,
+		FLUID_URINE, FLUID_OIL,		FLUID_FRUITJUICE, FLUID_COCONUTMILK, FLUID_TEA,	FLUID_MEAD,
 };
 
 enum ClientFluidTypes_t : uint8_t {
@@ -309,14 +286,8 @@ enum ClientFluidTypes_t : uint8_t {
 };
 
 const uint8_t fluidMap[] = {
-	CLIENTFLUID_EMPTY,
-	CLIENTFLUID_BLUE,
-	CLIENTFLUID_RED,
-	CLIENTFLUID_BROWN_1,
-	CLIENTFLUID_GREEN,
-	CLIENTFLUID_YELLOW,
-	CLIENTFLUID_WHITE,
-	CLIENTFLUID_PURPLE,
+		CLIENTFLUID_EMPTY, CLIENTFLUID_BLUE,	 CLIENTFLUID_RED,		CLIENTFLUID_BROWN_1,
+		CLIENTFLUID_GREEN, CLIENTFLUID_YELLOW, CLIENTFLUID_WHITE, CLIENTFLUID_PURPLE,
 };
 
 enum SquareColor_t : uint8_t {
@@ -344,7 +315,7 @@ enum TextColor_t : uint8_t {
 enum Icons_t {
 	ICON_POISON = 1 << 0,
 	ICON_BURN = 1 << 1,
-	ICON_ENERGY =  1 << 2,
+	ICON_ENERGY = 1 << 2,
 	ICON_DRUNK = 1 << 3,
 	ICON_MANASHIELD = 1 << 4,
 	ICON_PARALYZE = 1 << 5,
@@ -432,7 +403,7 @@ enum GuildEmblems_t : uint8_t {
 };
 
 enum item_t : uint16_t {
-	ITEM_BROWSEFIELD = 460, // for internal use
+	ITEM_BROWSEFIELD = 460,	// for internal use
 
 	ITEM_FIREFIELD_PVP_FULL = 1487,
 	ITEM_FIREFIELD_PVP_MEDIUM = 1488,
@@ -466,7 +437,7 @@ enum item_t : uint16_t {
 	ITEM_GOLD_COIN = 2148,
 	ITEM_PLATINUM_COIN = 2152,
 	ITEM_CRYSTAL_COIN = 2160,
-	ITEM_STORE_COIN = 24774, // in-game store currency
+	ITEM_STORE_COIN = 24774,	// in-game store currency
 
 	ITEM_DEPOT = 2594,
 	ITEM_LOCKER1 = 2589,
@@ -504,7 +475,7 @@ enum item_t : uint16_t {
 
 	ITEM_AMULETOFLOSS = 2173,
 
-	ITEM_DOCUMENT_RO = 1968, //read-only
+	ITEM_DOCUMENT_RO = 1968,	// read-only
 };
 
 enum PlayerFlags : uint64_t {
@@ -548,7 +519,7 @@ enum PlayerFlags : uint64_t {
 	PlayerFlag_IsAlwaysPremium = static_cast<uint64_t>(1) << 37,
 };
 
-enum ReloadTypes_t : uint8_t  {
+enum ReloadTypes_t : uint8_t {
 	RELOAD_TYPE_ALL,
 	RELOAD_TYPE_ACTIONS,
 	RELOAD_TYPE_CHAT,
@@ -574,7 +545,7 @@ static constexpr int32_t CHANNEL_GUILD = 0x00;
 static constexpr int32_t CHANNEL_PARTY = 0x01;
 static constexpr int32_t CHANNEL_PRIVATE = 0xFFFF;
 
-//Reserved player storage key ranges;
+// Reserved player storage key ranges;
 //[10000000 - 20000000];
 static constexpr int32_t PSTRG_RESERVED_RANGE_START = 10000000;
 static constexpr int32_t PSTRG_RESERVED_RANGE_SIZE = 10000000;
@@ -586,7 +557,7 @@ static constexpr int32_t PSTRG_MOUNTS_RANGE_START = (PSTRG_RESERVED_RANGE_START 
 static constexpr int32_t PSTRG_MOUNTS_RANGE_SIZE = 10;
 static constexpr int32_t PSTRG_MOUNTS_CURRENTMOUNT = (PSTRG_MOUNTS_RANGE_START + 10);
 
-
-#define IS_IN_KEYRANGE(key, range) (key >= PSTRG_##range##_START && ((key - PSTRG_##range##_START) <= PSTRG_##range##_SIZE))
+#define IS_IN_KEYRANGE(key, range) \
+	(key >= PSTRG_##range##_START && ((key - PSTRG_##range##_START) <= PSTRG_##range##_SIZE))
 
 #endif

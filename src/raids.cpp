@@ -31,20 +31,15 @@
 extern Game g_game;
 extern ConfigManager g_config;
 
-Raids::Raids()
-{
-	scriptInterface.initState();
-}
+Raids::Raids() { scriptInterface.initState(); }
 
-Raids::~Raids()
-{
+Raids::~Raids() {
 	for (Raid* raid : raidList) {
 		delete raid;
 	}
 }
 
-bool Raids::loadFromXml()
-{
+bool Raids::loadFromXml() {
 	if (isLoaded()) {
 		return true;
 	}
@@ -74,19 +69,23 @@ bool Raids::loadFromXml()
 			std::ostringstream ss;
 			ss << "raids/" << name << ".xml";
 			file = ss.str();
-			std::cout << "[Warning - Raids::loadFromXml] File tag missing for raid " << name << ". Using default: " << file << std::endl;
+			std::cout << "[Warning - Raids::loadFromXml] File tag missing for raid " << name
+								<< ". Using default: " << file << std::endl;
 		}
 
 		interval = pugi::cast<uint32_t>(raidNode.attribute("interval2").value()) * 60;
 		if (interval == 0) {
-			std::cout << "[Error - Raids::loadFromXml] interval2 tag missing or zero (would divide by 0) for raid: " << name << std::endl;
+			std::cout << "[Error - Raids::loadFromXml] interval2 tag missing or zero (would divide by 0) "
+									 "for raid: "
+								<< name << std::endl;
 			continue;
 		}
 
 		if ((attr = raidNode.attribute("margin"))) {
 			margin = pugi::cast<uint32_t>(attr.value()) * 60 * 1000;
 		} else {
-			std::cout << "[Warning - Raids::loadFromXml] margin tag missing for raid: " << name << std::endl;
+			std::cout << "[Warning - Raids::loadFromXml] margin tag missing for raid: " << name
+								<< std::endl;
 			margin = 0;
 		}
 
@@ -112,29 +111,29 @@ bool Raids::loadFromXml()
 
 static constexpr int32_t MAX_RAND_RANGE = 10000000;
 
-bool Raids::startup()
-{
+bool Raids::startup() {
 	if (!isLoaded() || isStarted()) {
 		return false;
 	}
 
 	setLastRaidEnd(OTSYS_TIME());
 
-	checkRaidsEvent = g_scheduler.addEvent(createSchedulerTask(CHECK_RAIDS_INTERVAL * 1000, std::bind(&Raids::checkRaids, this)));
+	checkRaidsEvent = g_scheduler.addEvent(
+			createSchedulerTask(CHECK_RAIDS_INTERVAL * 1000, std::bind(&Raids::checkRaids, this)));
 
 	started = true;
 	return started;
 }
 
-void Raids::checkRaids()
-{
+void Raids::checkRaids() {
 	if (!getRunning()) {
 		uint64_t now = OTSYS_TIME();
 
 		for (auto it = raidList.begin(), end = raidList.end(); it != end; ++it) {
 			Raid* raid = *it;
 			if (now >= (getLastRaidEnd() + raid->getMargin())) {
-				if (((MAX_RAND_RANGE * CHECK_RAIDS_INTERVAL) / raid->getInterval()) >= static_cast<uint32_t>(uniform_random(0, MAX_RAND_RANGE))) {
+				if (((MAX_RAND_RANGE * CHECK_RAIDS_INTERVAL) / raid->getInterval()) >=
+						static_cast<uint32_t>(uniform_random(0, MAX_RAND_RANGE))) {
 					setRunning(raid);
 					raid->startRaid();
 
@@ -147,11 +146,11 @@ void Raids::checkRaids()
 		}
 	}
 
-	checkRaidsEvent = g_scheduler.addEvent(createSchedulerTask(CHECK_RAIDS_INTERVAL * 1000, std::bind(&Raids::checkRaids, this)));
+	checkRaidsEvent = g_scheduler.addEvent(
+			createSchedulerTask(CHECK_RAIDS_INTERVAL * 1000, std::bind(&Raids::checkRaids, this)));
 }
 
-void Raids::clear()
-{
+void Raids::clear() {
 	g_scheduler.stopEvent(checkRaidsEvent);
 	checkRaidsEvent = 0;
 
@@ -169,14 +168,12 @@ void Raids::clear()
 	scriptInterface.reInitState();
 }
 
-bool Raids::reload()
-{
+bool Raids::reload() {
 	clear();
 	return loadFromXml();
 }
 
-Raid* Raids::getRaidByName(const std::string& name)
-{
+Raid* Raids::getRaidByName(const std::string& name) {
 	for (Raid* raid : raidList) {
 		if (strcasecmp(raid->getName().c_str(), name.c_str()) == 0) {
 			return raid;
@@ -185,15 +182,13 @@ Raid* Raids::getRaidByName(const std::string& name)
 	return nullptr;
 }
 
-Raid::~Raid()
-{
+Raid::~Raid() {
 	for (RaidEvent* raidEvent : raidEvents) {
 		delete raidEvent;
 	}
 }
 
-bool Raid::loadFromXml(const std::string& filename)
-{
+bool Raid::loadFromXml(const std::string& filename) {
 	if (isLoaded()) {
 		return true;
 	}
@@ -222,12 +217,13 @@ bool Raid::loadFromXml(const std::string& filename)
 		if (event->configureRaidEvent(eventNode)) {
 			raidEvents.push_back(event);
 		} else {
-			std::cout << "[Error - Raid::loadFromXml] In file (" << filename << "), eventNode: " << eventNode.name() << std::endl;
+			std::cout << "[Error - Raid::loadFromXml] In file (" << filename
+								<< "), eventNode: " << eventNode.name() << std::endl;
 			delete event;
 		}
 	}
 
-	//sort by delay time
+	// sort by delay time
 	std::sort(raidEvents.begin(), raidEvents.end(), [](const RaidEvent* lhs, const RaidEvent* rhs) {
 		return lhs->getDelay() < rhs->getDelay();
 	});
@@ -236,24 +232,25 @@ bool Raid::loadFromXml(const std::string& filename)
 	return true;
 }
 
-void Raid::startRaid()
-{
+void Raid::startRaid() {
 	RaidEvent* raidEvent = getNextRaidEvent();
 	if (raidEvent) {
 		state = RAIDSTATE_EXECUTING;
-		nextEventEvent = g_scheduler.addEvent(createSchedulerTask(raidEvent->getDelay(), std::bind(&Raid::executeRaidEvent, this, raidEvent)));
+		nextEventEvent = g_scheduler.addEvent(createSchedulerTask(
+				raidEvent->getDelay(), std::bind(&Raid::executeRaidEvent, this, raidEvent)));
 	}
 }
 
-void Raid::executeRaidEvent(RaidEvent* raidEvent)
-{
+void Raid::executeRaidEvent(RaidEvent* raidEvent) {
 	if (raidEvent->executeEvent()) {
 		nextEvent++;
 		RaidEvent* newRaidEvent = getNextRaidEvent();
 
 		if (newRaidEvent) {
-			uint32_t ticks = static_cast<uint32_t>(std::max<int32_t>(RAID_MINTICKS, newRaidEvent->getDelay() - raidEvent->getDelay()));
-			nextEventEvent = g_scheduler.addEvent(createSchedulerTask(ticks, std::bind(&Raid::executeRaidEvent, this, newRaidEvent)));
+			uint32_t ticks = static_cast<uint32_t>(
+					std::max<int32_t>(RAID_MINTICKS, newRaidEvent->getDelay() - raidEvent->getDelay()));
+			nextEventEvent = g_scheduler.addEvent(
+					createSchedulerTask(ticks, std::bind(&Raid::executeRaidEvent, this, newRaidEvent)));
 		} else {
 			resetRaid();
 		}
@@ -262,24 +259,21 @@ void Raid::executeRaidEvent(RaidEvent* raidEvent)
 	}
 }
 
-void Raid::resetRaid()
-{
+void Raid::resetRaid() {
 	nextEvent = 0;
 	state = RAIDSTATE_IDLE;
 	g_game.raids.setRunning(nullptr);
 	g_game.raids.setLastRaidEnd(OTSYS_TIME());
 }
 
-void Raid::stopEvents()
-{
+void Raid::stopEvents() {
 	if (nextEventEvent != 0) {
 		g_scheduler.stopEvent(nextEventEvent);
 		nextEventEvent = 0;
 	}
 }
 
-RaidEvent* Raid::getNextRaidEvent()
-{
+RaidEvent* Raid::getNextRaidEvent() {
 	if (nextEvent < raidEvents.size()) {
 		return raidEvents[nextEvent];
 	} else {
@@ -287,8 +281,7 @@ RaidEvent* Raid::getNextRaidEvent()
 	}
 }
 
-bool RaidEvent::configureRaidEvent(const pugi::xml_node& eventNode)
-{
+bool RaidEvent::configureRaidEvent(const pugi::xml_node& eventNode) {
 	pugi::xml_attribute delayAttribute = eventNode.attribute("delay");
 	if (!delayAttribute) {
 		std::cout << "[Error] Raid: delay tag missing." << std::endl;
@@ -299,8 +292,7 @@ bool RaidEvent::configureRaidEvent(const pugi::xml_node& eventNode)
 	return true;
 }
 
-bool AnnounceEvent::configureRaidEvent(const pugi::xml_node& eventNode)
-{
+bool AnnounceEvent::configureRaidEvent(const pugi::xml_node& eventNode) {
 	if (!RaidEvent::configureRaidEvent(eventNode)) {
 		return false;
 	}
@@ -330,23 +322,23 @@ bool AnnounceEvent::configureRaidEvent(const pugi::xml_node& eventNode)
 		} else if (tmpStrValue == "redconsole") {
 			messageType = MESSAGE_STATUS_CONSOLE_RED;
 		} else {
-			std::cout << "[Notice] Raid: Unknown type tag missing for announce event. Using default: " << static_cast<uint32_t>(messageType) << std::endl;
+			std::cout << "[Notice] Raid: Unknown type tag missing for announce event. Using default: "
+								<< static_cast<uint32_t>(messageType) << std::endl;
 		}
 	} else {
 		messageType = MESSAGE_EVENT_ADVANCE;
-		std::cout << "[Notice] Raid: type tag missing for announce event. Using default: " << static_cast<uint32_t>(messageType) << std::endl;
+		std::cout << "[Notice] Raid: type tag missing for announce event. Using default: "
+							<< static_cast<uint32_t>(messageType) << std::endl;
 	}
 	return true;
 }
 
-bool AnnounceEvent::executeEvent()
-{
+bool AnnounceEvent::executeEvent() {
 	g_game.broadcastMessage(message, messageType);
 	return true;
 }
 
-bool SingleSpawnEvent::configureRaidEvent(const pugi::xml_node& eventNode)
-{
+bool SingleSpawnEvent::configureRaidEvent(const pugi::xml_node& eventNode) {
 	if (!RaidEvent::configureRaidEvent(eventNode)) {
 		return false;
 	}
@@ -382,8 +374,7 @@ bool SingleSpawnEvent::configureRaidEvent(const pugi::xml_node& eventNode)
 	return true;
 }
 
-bool SingleSpawnEvent::executeEvent()
-{
+bool SingleSpawnEvent::executeEvent() {
 	Monster* monster = Monster::createMonster(monsterName);
 	if (!monster) {
 		std::cout << "[Error] Raids: Cant create monster " << monsterName << std::endl;
@@ -398,8 +389,7 @@ bool SingleSpawnEvent::executeEvent()
 	return true;
 }
 
-bool AreaSpawnEvent::configureRaidEvent(const pugi::xml_node& eventNode)
-{
+bool AreaSpawnEvent::configureRaidEvent(const pugi::xml_node& eventNode) {
 	if (!RaidEvent::configureRaidEvent(eventNode)) {
 		return false;
 	}
@@ -520,21 +510,25 @@ bool AreaSpawnEvent::configureRaidEvent(const pugi::xml_node& eventNode)
 	return true;
 }
 
-bool AreaSpawnEvent::executeEvent()
-{
+bool AreaSpawnEvent::executeEvent() {
 	for (const MonsterSpawn& spawn : spawnList) {
 		uint32_t amount = uniform_random(spawn.minAmount, spawn.maxAmount);
 		for (uint32_t i = 0; i < amount; ++i) {
 			Monster* monster = Monster::createMonster(spawn.name);
 			if (!monster) {
-				std::cout << "[Error - AreaSpawnEvent::executeEvent] Can't create monster " << spawn.name << std::endl;
+				std::cout << "[Error - AreaSpawnEvent::executeEvent] Can't create monster " << spawn.name
+									<< std::endl;
 				return false;
 			}
 
 			bool success = false;
 			for (int32_t tries = 0; tries < MAXIMUM_TRIES_PER_MONSTER; tries++) {
-				Tile* tile = g_game.map.getTile(uniform_random(fromPos.x, toPos.x), uniform_random(fromPos.y, toPos.y), uniform_random(fromPos.z, toPos.z));
-				if (tile && !tile->isMoveableBlocking() && !tile->hasFlag(TILESTATE_PROTECTIONZONE) && tile->getTopCreature() == nullptr && g_game.placeCreature(monster, tile->getPosition(), false, true)) {
+				Tile* tile = g_game.map.getTile(uniform_random(fromPos.x, toPos.x),
+																				uniform_random(fromPos.y, toPos.y),
+																				uniform_random(fromPos.z, toPos.z));
+				if (tile && !tile->isMoveableBlocking() && !tile->hasFlag(TILESTATE_PROTECTIONZONE) &&
+						tile->getTopCreature() == nullptr &&
+						g_game.placeCreature(monster, tile->getPosition(), false, true)) {
 					success = true;
 					break;
 				}
@@ -548,15 +542,15 @@ bool AreaSpawnEvent::executeEvent()
 	return true;
 }
 
-bool ScriptEvent::configureRaidEvent(const pugi::xml_node& eventNode)
-{
+bool ScriptEvent::configureRaidEvent(const pugi::xml_node& eventNode) {
 	if (!RaidEvent::configureRaidEvent(eventNode)) {
 		return false;
 	}
 
 	pugi::xml_attribute scriptAttribute = eventNode.attribute("script");
 	if (!scriptAttribute) {
-		std::cout << "Error: [ScriptEvent::configureRaidEvent] No script file found for raid" << std::endl;
+		std::cout << "Error: [ScriptEvent::configureRaidEvent] No script file found for raid"
+							<< std::endl;
 		return false;
 	}
 
@@ -567,14 +561,10 @@ bool ScriptEvent::configureRaidEvent(const pugi::xml_node& eventNode)
 	return true;
 }
 
-std::string ScriptEvent::getScriptEventName() const
-{
-	return "onRaid";
-}
+std::string ScriptEvent::getScriptEventName() const { return "onRaid"; }
 
-bool ScriptEvent::executeEvent()
-{
-	//onRaid()
+bool ScriptEvent::executeEvent() {
+	// onRaid()
 	if (!scriptInterface->reserveScriptEnv()) {
 		std::cout << "[Error - ScriptEvent::onRaid] Call stack overflow" << std::endl;
 		return false;

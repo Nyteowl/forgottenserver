@@ -24,8 +24,7 @@
 #include "pugicast.h"
 #include "tools.h"
 
-bool Vocations::loadFromXml()
-{
+bool Vocations::loadFromXml() {
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file("data/XML/vocations.xml");
 	if (!result) {
@@ -42,8 +41,8 @@ bool Vocations::loadFromXml()
 
 		uint16_t id = pugi::cast<uint16_t>(attr.value());
 
-		auto res = vocationsMap.emplace(std::piecewise_construct,
-				std::forward_as_tuple(id), std::forward_as_tuple(id));
+		auto res = vocationsMap.emplace(std::piecewise_construct, std::forward_as_tuple(id),
+																		std::forward_as_tuple(id));
 		Vocation& voc = res.first->second;
 
 		if ((attr = vocationNode.attribute("name"))) {
@@ -116,12 +115,15 @@ bool Vocations::loadFromXml()
 				if (skillIdAttribute) {
 					uint16_t skill_id = pugi::cast<uint16_t>(skillIdAttribute.value());
 					if (skill_id <= SKILL_LAST) {
-						voc.skillMultipliers[skill_id] = pugi::cast<float>(childNode.attribute("multiplier").value());
+						voc.skillMultipliers[skill_id] =
+								pugi::cast<float>(childNode.attribute("multiplier").value());
 					} else {
-						std::cout << "[Notice - Vocations::loadFromXml] No valid skill id: " << skill_id << " for vocation: " << voc.id << std::endl;
+						std::cout << "[Notice - Vocations::loadFromXml] No valid skill id: " << skill_id
+											<< " for vocation: " << voc.id << std::endl;
 					}
 				} else {
-					std::cout << "[Notice - Vocations::loadFromXml] Missing skill id for vocation: " << voc.id << std::endl;
+					std::cout << "[Notice - Vocations::loadFromXml] Missing skill id for vocation: " << voc.id
+										<< std::endl;
 				}
 			} else if (strcasecmp(childNode.name(), "formula") == 0) {
 				pugi::xml_attribute meleeDamageAttribute = childNode.attribute("meleeDamage");
@@ -149,8 +151,7 @@ bool Vocations::loadFromXml()
 	return true;
 }
 
-Vocation* Vocations::getVocation(uint16_t id)
-{
+Vocation* Vocations::getVocation(uint16_t id) {
 	auto it = vocationsMap.find(id);
 	if (it == vocationsMap.end()) {
 		std::cout << "[Warning - Vocations::getVocation] Vocation " << id << " not found." << std::endl;
@@ -159,8 +160,7 @@ Vocation* Vocations::getVocation(uint16_t id)
 	return &it->second;
 }
 
-int32_t Vocations::getVocationId(const std::string& name) const
-{
+int32_t Vocations::getVocationId(const std::string& name) const {
 	for (const auto& it : vocationsMap) {
 		if (strcasecmp(it.second.name.c_str(), name.c_str()) == 0) {
 			return it.first;
@@ -169,8 +169,7 @@ int32_t Vocations::getVocationId(const std::string& name) const
 	return -1;
 }
 
-uint16_t Vocations::getPromotedVocation(uint16_t vocationId) const
-{
+uint16_t Vocations::getPromotedVocation(uint16_t vocationId) const {
 	for (const auto& it : vocationsMap) {
 		if (it.second.fromVocation == vocationId && it.first != vocationId) {
 			return it.first;
@@ -181,8 +180,7 @@ uint16_t Vocations::getPromotedVocation(uint16_t vocationId) const
 
 uint32_t Vocation::skillBase[SKILL_LAST + 1] = {50, 50, 50, 50, 30, 100, 20};
 
-uint64_t Vocation::getReqSkillTries(uint8_t skill, uint16_t level)
-{
+uint64_t Vocation::getReqSkillTries(uint8_t skill, uint16_t level) {
 	if (skill > SKILL_LAST) {
 		return 0;
 	}
@@ -192,19 +190,20 @@ uint64_t Vocation::getReqSkillTries(uint8_t skill, uint16_t level)
 		return it->second;
 	}
 
-	uint64_t tries = static_cast<uint64_t>(skillBase[skill] * std::pow(static_cast<double>(skillMultipliers[skill]), level - 11));
+	uint64_t tries = static_cast<uint64_t>(
+			skillBase[skill] * std::pow(static_cast<double>(skillMultipliers[skill]), level - 11));
 	cacheSkill[skill][level] = tries;
 	return tries;
 }
 
-uint64_t Vocation::getReqMana(uint32_t magLevel)
-{
+uint64_t Vocation::getReqMana(uint32_t magLevel) {
 	auto it = cacheMana.find(magLevel);
 	if (it != cacheMana.end()) {
 		return it->second;
 	}
 
-	uint64_t reqMana = std::floor<uint64_t>(1600 * std::pow<double>(manaMultiplier, static_cast<int32_t>(magLevel) - 1));
+	uint64_t reqMana = std::floor<uint64_t>(
+			1600 * std::pow<double>(manaMultiplier, static_cast<int32_t>(magLevel) - 1));
 	cacheMana[magLevel] = reqMana;
 	return reqMana;
 }

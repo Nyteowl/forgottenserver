@@ -26,8 +26,7 @@
 
 extern RSA g_RSA;
 
-void Protocol::onSendMessage(const OutputMessage_ptr& msg) const
-{
+void Protocol::onSendMessage(const OutputMessage_ptr& msg) const {
 	if (!rawMessages) {
 		msg->writeMessageLength();
 
@@ -38,8 +37,7 @@ void Protocol::onSendMessage(const OutputMessage_ptr& msg) const
 	}
 }
 
-void Protocol::onRecvMessage(NetworkMessage& msg)
-{
+void Protocol::onRecvMessage(NetworkMessage& msg) {
 	if (encryptionEnabled && !XTEA_decrypt(msg)) {
 		return;
 	}
@@ -47,9 +45,8 @@ void Protocol::onRecvMessage(NetworkMessage& msg)
 	parsePacket(msg);
 }
 
-OutputMessage_ptr Protocol::getOutputBuffer(int32_t size)
-{
-	//dispatcher thread
+OutputMessage_ptr Protocol::getOutputBuffer(int32_t size) {
+	// dispatcher thread
 	if (!outputBuffer) {
 		outputBuffer = OutputMessagePool::getOutputMessage();
 	} else if ((outputBuffer->getLength() + size) > NetworkMessage::MAX_PROTOCOL_BODY_LENGTH) {
@@ -59,8 +56,7 @@ OutputMessage_ptr Protocol::getOutputBuffer(int32_t size)
 	return outputBuffer;
 }
 
-void Protocol::XTEA_encrypt(OutputMessage& msg) const
-{
+void Protocol::XTEA_encrypt(OutputMessage& msg) const {
 	// The message must be a multiple of 8
 	size_t paddingBytes = msg.getLength() % 8u;
 	if (paddingBytes != 0) {
@@ -71,8 +67,7 @@ void Protocol::XTEA_encrypt(OutputMessage& msg) const
 	xtea::encrypt(buffer, msg.getLength(), key);
 }
 
-bool Protocol::XTEA_decrypt(NetworkMessage& msg) const
-{
+bool Protocol::XTEA_decrypt(NetworkMessage& msg) const {
 	if (((msg.getLength() - 6) & 7) != 0) {
 		return false;
 	}
@@ -89,18 +84,17 @@ bool Protocol::XTEA_decrypt(NetworkMessage& msg) const
 	return true;
 }
 
-bool Protocol::RSA_decrypt(NetworkMessage& msg)
-{
+bool Protocol::RSA_decrypt(NetworkMessage& msg) {
 	if ((msg.getLength() - msg.getBufferPosition()) < 128) {
 		return false;
 	}
 
-	g_RSA.decrypt(reinterpret_cast<char*>(msg.getBuffer()) + msg.getBufferPosition()); //does not break strict aliasing
+	g_RSA.decrypt(reinterpret_cast<char*>(msg.getBuffer()) +
+								msg.getBufferPosition());	// does not break strict aliasing
 	return msg.getByte() == 0;
 }
 
-uint32_t Protocol::getIP() const
-{
+uint32_t Protocol::getIP() const {
 	if (auto connection = getConnection()) {
 		return connection->getIP();
 	}

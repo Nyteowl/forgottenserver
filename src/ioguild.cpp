@@ -23,8 +23,7 @@
 #include "guild.h"
 #include "ioguild.h"
 
-Guild* IOGuild::loadGuild(uint32_t guildId)
-{
+Guild* IOGuild::loadGuild(uint32_t guildId) {
 	Database& db = Database::getInstance();
 	std::ostringstream query;
 	query << "SELECT `name` FROM `guilds` WHERE `id` = " << guildId;
@@ -36,7 +35,8 @@ Guild* IOGuild::loadGuild(uint32_t guildId)
 
 		if ((result = db.storeQuery(query.str()))) {
 			do {
-				guild->addRank(result->getNumber<uint32_t>("id"), result->getString("name"), result->getNumber<uint16_t>("level"));
+				guild->addRank(result->getNumber<uint32_t>("id"), result->getString("name"),
+											 result->getNumber<uint16_t>("level"));
 			} while (result->next());
 		}
 		return guild;
@@ -44,8 +44,7 @@ Guild* IOGuild::loadGuild(uint32_t guildId)
 	return nullptr;
 }
 
-uint32_t IOGuild::getGuildIdByName(const std::string& name)
-{
+uint32_t IOGuild::getGuildIdByName(const std::string& name) {
 	Database& db = Database::getInstance();
 
 	std::ostringstream query;
@@ -58,10 +57,10 @@ uint32_t IOGuild::getGuildIdByName(const std::string& name)
 	return result->getNumber<uint32_t>("id");
 }
 
-void IOGuild::getWarList(uint32_t guildId, GuildWarVector& guildWarVector)
-{
+void IOGuild::getWarList(uint32_t guildId, GuildWarVector& guildWarVector) {
 	std::ostringstream query;
-	query << "SELECT `guild1`, `guild2` FROM `guild_wars` WHERE (`guild1` = " << guildId << " OR `guild2` = " << guildId << ") AND `ended` = 0 AND `status` = 1";
+	query << "SELECT `guild1`, `guild2` FROM `guild_wars` WHERE (`guild1` = " << guildId
+				<< " OR `guild2` = " << guildId << ") AND `ended` = 0 AND `status` = 1";
 
 	DBResult_ptr result = Database::getInstance().storeQuery(query.str());
 	if (!result) {

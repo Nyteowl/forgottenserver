@@ -23,8 +23,7 @@
 
 #include "pugicast.h"
 
-std::string Mission::getDescription(Player* player) const
-{
+std::string Mission::getDescription(Player* player) const {
 	int32_t value;
 	player->getStorageValue(storageID, value);
 
@@ -57,8 +56,7 @@ std::string Mission::getDescription(Player* player) const
 	return "An error has occurred, please contact a gamemaster.";
 }
 
-bool Mission::isStarted(Player* player) const
-{
+bool Mission::isStarted(Player* player) const {
 	if (!player) {
 		return false;
 	}
@@ -79,8 +77,7 @@ bool Mission::isStarted(Player* player) const
 	return true;
 }
 
-bool Mission::isCompleted(Player* player) const
-{
+bool Mission::isCompleted(Player* player) const {
 	if (!player) {
 		return false;
 	}
@@ -97,16 +94,14 @@ bool Mission::isCompleted(Player* player) const
 	return value == endValue;
 }
 
-std::string Mission::getName(Player* player) const
-{
+std::string Mission::getName(Player* player) const {
 	if (isCompleted(player)) {
 		return name + " (completed)";
 	}
 	return name;
 }
 
-uint16_t Quest::getMissionsCount(Player* player) const
-{
+uint16_t Quest::getMissionsCount(Player* player) const {
 	uint16_t count = 0;
 	for (const Mission& mission : missions) {
 		if (mission.isStarted(player)) {
@@ -116,8 +111,7 @@ uint16_t Quest::getMissionsCount(Player* player) const
 	return count;
 }
 
-bool Quest::isCompleted(Player* player) const
-{
+bool Quest::isCompleted(Player* player) const {
 	for (const Mission& mission : missions) {
 		if (!mission.isCompleted(player)) {
 			return false;
@@ -126,8 +120,7 @@ bool Quest::isCompleted(Player* player) const
 	return true;
 }
 
-bool Quest::isStarted(Player* player) const
-{
+bool Quest::isStarted(Player* player) const {
 	if (!player) {
 		return false;
 	}
@@ -140,14 +133,12 @@ bool Quest::isStarted(Player* player) const
 	return true;
 }
 
-bool Quests::reload()
-{
+bool Quests::reload() {
 	quests.clear();
 	return loadFromXml();
 }
 
-bool Quests::loadFromXml()
-{
+bool Quests::loadFromXml() {
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file("data/XML/quests.xml");
 	if (!result) {
@@ -157,30 +148,26 @@ bool Quests::loadFromXml()
 
 	uint16_t id = 0;
 	for (auto questNode : doc.child("quests").children()) {
-		quests.emplace_back(
-			questNode.attribute("name").as_string(),
-			++id,
-			pugi::cast<int32_t>(questNode.attribute("startstorageid").value()),
-			pugi::cast<int32_t>(questNode.attribute("startstoragevalue").value())
-		);
+		quests.emplace_back(questNode.attribute("name").as_string(), ++id,
+												pugi::cast<int32_t>(questNode.attribute("startstorageid").value()),
+												pugi::cast<int32_t>(questNode.attribute("startstoragevalue").value()));
 		Quest& quest = quests.back();
 
 		for (auto missionNode : questNode.children()) {
 			std::string mainDescription = missionNode.attribute("description").as_string();
 
-			quest.missions.emplace_back(
-				missionNode.attribute("name").as_string(),
-				pugi::cast<int32_t>(missionNode.attribute("storageid").value()),
-				pugi::cast<int32_t>(missionNode.attribute("startvalue").value()),
-				pugi::cast<int32_t>(missionNode.attribute("endvalue").value()),
-				missionNode.attribute("ignoreendvalue").as_bool()
-			);
+			quest.missions.emplace_back(missionNode.attribute("name").as_string(),
+																	pugi::cast<int32_t>(missionNode.attribute("storageid").value()),
+																	pugi::cast<int32_t>(missionNode.attribute("startvalue").value()),
+																	pugi::cast<int32_t>(missionNode.attribute("endvalue").value()),
+																	missionNode.attribute("ignoreendvalue").as_bool());
 			Mission& mission = quest.missions.back();
 
 			if (mainDescription.empty()) {
 				for (auto missionStateNode : missionNode.children()) {
 					int32_t missionId = pugi::cast<int32_t>(missionStateNode.attribute("id").value());
-					mission.descriptions.emplace(missionId, missionStateNode.attribute("description").as_string());
+					mission.descriptions.emplace(missionId,
+																			 missionStateNode.attribute("description").as_string());
 				}
 			} else {
 				mission.mainDescription = mainDescription;
@@ -190,8 +177,7 @@ bool Quests::loadFromXml()
 	return true;
 }
 
-Quest* Quests::getQuestByID(uint16_t id)
-{
+Quest* Quests::getQuestByID(uint16_t id) {
 	for (Quest& quest : quests) {
 		if (quest.id == id) {
 			return &quest;
@@ -200,8 +186,7 @@ Quest* Quests::getQuestByID(uint16_t id)
 	return nullptr;
 }
 
-uint16_t Quests::getQuestsCount(Player* player) const
-{
+uint16_t Quests::getQuestsCount(Player* player) const {
 	uint16_t count = 0;
 	for (const Quest& quest : quests) {
 		if (quest.isStarted(player)) {
@@ -211,16 +196,17 @@ uint16_t Quests::getQuestsCount(Player* player) const
 	return count;
 }
 
-bool Quests::isQuestStorage(const uint32_t key, const int32_t value, const int32_t oldValue) const
-{
+bool Quests::isQuestStorage(const uint32_t key, const int32_t value, const int32_t oldValue) const {
 	for (const Quest& quest : quests) {
 		if (quest.getStartStorageId() == key && quest.getStartStorageValue() == value) {
 			return true;
 		}
 
 		for (const Mission& mission : quest.getMissions()) {
-			if (mission.getStorageId() == key && value >= mission.getStartStorageValue() && value <= mission.getEndStorageValue()) {
-				return mission.mainDescription.empty() || oldValue < mission.getStartStorageValue() || oldValue > mission.getEndStorageValue();
+			if (mission.getStorageId() == key && value >= mission.getStartStorageValue() &&
+					value <= mission.getEndStorageValue()) {
+				return mission.mainDescription.empty() || oldValue < mission.getStartStorageValue() ||
+							 oldValue > mission.getEndStorageValue();
 			}
 		}
 	}

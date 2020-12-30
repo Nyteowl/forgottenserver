@@ -24,15 +24,12 @@
 
 extern Dispatcher g_dispatcher;
 
-
-void DatabaseTasks::start()
-{
+void DatabaseTasks::start() {
 	db.connect();
 	ThreadHolder::start();
 }
 
-void DatabaseTasks::threadMain()
-{
+void DatabaseTasks::threadMain() {
 	std::unique_lock<std::mutex> taskLockUnique(taskLock, std::defer_lock);
 	while (getState() != THREAD_STATE_TERMINATED) {
 		taskLockUnique.lock();
@@ -51,8 +48,9 @@ void DatabaseTasks::threadMain()
 	}
 }
 
-void DatabaseTasks::addTask(std::string query, std::function<void(DBResult_ptr, bool)> callback/* = nullptr*/, bool store/* = false*/)
-{
+void DatabaseTasks::addTask(std::string query,
+														std::function<void(DBResult_ptr, bool)> callback /* = nullptr*/,
+														bool store /* = false*/) {
 	bool signal = false;
 	taskLock.lock();
 	if (getState() == THREAD_STATE_RUNNING) {
@@ -66,8 +64,7 @@ void DatabaseTasks::addTask(std::string query, std::function<void(DBResult_ptr, 
 	}
 }
 
-void DatabaseTasks::runTask(const DatabaseTask& task)
-{
+void DatabaseTasks::runTask(const DatabaseTask& task) {
 	bool success;
 	DBResult_ptr result;
 	if (task.store) {
@@ -83,9 +80,8 @@ void DatabaseTasks::runTask(const DatabaseTask& task)
 	}
 }
 
-void DatabaseTasks::flush()
-{
-	std::unique_lock<std::mutex> guard{ taskLock };
+void DatabaseTasks::flush() {
+	std::unique_lock<std::mutex> guard{taskLock};
 	while (!tasks.empty()) {
 		auto task = std::move(tasks.front());
 		tasks.pop_front();
@@ -95,8 +91,7 @@ void DatabaseTasks::flush()
 	}
 }
 
-void DatabaseTasks::shutdown()
-{
+void DatabaseTasks::shutdown() {
 	taskLock.lock();
 	setState(THREAD_STATE_TERMINATED);
 	taskLock.unlock();

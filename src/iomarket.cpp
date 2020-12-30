@@ -30,12 +30,13 @@
 extern ConfigManager g_config;
 extern Game g_game;
 
-MarketOfferList IOMarket::getActiveOffers(MarketAction_t action, uint16_t itemId)
-{
+MarketOfferList IOMarket::getActiveOffers(MarketAction_t action, uint16_t itemId) {
 	MarketOfferList offerList;
 
 	std::ostringstream query;
-	query << "SELECT `id`, `amount`, `price`, `created`, `anonymous`, (SELECT `name` FROM `players` WHERE `id` = `player_id`) AS `player_name` FROM `market_offers` WHERE `sale` = " << action << " AND `itemtype` = " << itemId;
+	query << "SELECT `id`, `amount`, `price`, `created`, `anonymous`, (SELECT `name` FROM `players` "
+					 "WHERE `id` = `player_id`) AS `player_name` FROM `market_offers` WHERE `sale` = "
+				<< action << " AND `itemtype` = " << itemId;
 
 	DBResult_ptr result = Database::getInstance().storeQuery(query.str());
 	if (!result) {
@@ -60,14 +61,15 @@ MarketOfferList IOMarket::getActiveOffers(MarketAction_t action, uint16_t itemId
 	return offerList;
 }
 
-MarketOfferList IOMarket::getOwnOffers(MarketAction_t action, uint32_t playerId)
-{
+MarketOfferList IOMarket::getOwnOffers(MarketAction_t action, uint32_t playerId) {
 	MarketOfferList offerList;
 
 	const int32_t marketOfferDuration = g_config.getNumber(ConfigManager::MARKET_OFFER_DURATION);
 
 	std::ostringstream query;
-	query << "SELECT `id`, `amount`, `price`, `created`, `itemtype` FROM `market_offers` WHERE `player_id` = " << playerId << " AND `sale` = " << action;
+	query << "SELECT `id`, `amount`, `price`, `created`, `itemtype` FROM `market_offers` WHERE "
+					 "`player_id` = "
+				<< playerId << " AND `sale` = " << action;
 
 	DBResult_ptr result = Database::getInstance().storeQuery(query.str());
 	if (!result) {
@@ -86,12 +88,13 @@ MarketOfferList IOMarket::getOwnOffers(MarketAction_t action, uint32_t playerId)
 	return offerList;
 }
 
-HistoryMarketOfferList IOMarket::getOwnHistory(MarketAction_t action, uint32_t playerId)
-{
+HistoryMarketOfferList IOMarket::getOwnHistory(MarketAction_t action, uint32_t playerId) {
 	HistoryMarketOfferList offerList;
 
 	std::ostringstream query;
-	query << "SELECT `itemtype`, `amount`, `price`, `expires_at`, `state` FROM `market_history` WHERE `player_id` = " << playerId << " AND `sale` = " << action;
+	query << "SELECT `itemtype`, `amount`, `price`, `expires_at`, `state` FROM `market_history` "
+					 "WHERE `player_id` = "
+				<< playerId << " AND `sale` = " << action;
 
 	DBResult_ptr result = Database::getInstance().storeQuery(query.str());
 	if (!result) {
@@ -105,7 +108,8 @@ HistoryMarketOfferList IOMarket::getOwnHistory(MarketAction_t action, uint32_t p
 		offer.price = result->getNumber<uint32_t>("price");
 		offer.timestamp = result->getNumber<uint32_t>("expires_at");
 
-		MarketOfferState_t offerState = static_cast<MarketOfferState_t>(result->getNumber<uint16_t>("state"));
+		MarketOfferState_t offerState =
+				static_cast<MarketOfferState_t>(result->getNumber<uint16_t>("state"));
 		if (offerState == OFFERSTATE_ACCEPTEDEX) {
 			offerState = OFFERSTATE_ACCEPTED;
 		}
@@ -117,8 +121,7 @@ HistoryMarketOfferList IOMarket::getOwnHistory(MarketAction_t action, uint32_t p
 	return offerList;
 }
 
-void IOMarket::processExpiredOffers(DBResult_ptr result, bool)
-{
+void IOMarket::processExpiredOffers(DBResult_ptr result, bool) {
 	if (!result) {
 		return;
 	}
@@ -150,7 +153,8 @@ void IOMarket::processExpiredOffers(DBResult_ptr result, bool)
 				while (tmpAmount > 0) {
 					uint16_t stackCount = std::min<uint16_t>(100, tmpAmount);
 					Item* item = Item::CreateItem(itemType.id, stackCount);
-					if (g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT) != RETURNVALUE_NOERROR) {
+					if (g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT) !=
+							RETURNVALUE_NOERROR) {
 						delete item;
 						break;
 					}
@@ -167,7 +171,8 @@ void IOMarket::processExpiredOffers(DBResult_ptr result, bool)
 
 				for (uint16_t i = 0; i < amount; ++i) {
 					Item* item = Item::CreateItem(itemType.id, subType);
-					if (g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT) != RETURNVALUE_NOERROR) {
+					if (g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT) !=
+							RETURNVALUE_NOERROR) {
 						delete item;
 						break;
 					}
@@ -191,24 +196,27 @@ void IOMarket::processExpiredOffers(DBResult_ptr result, bool)
 	} while (result->next());
 }
 
-void IOMarket::checkExpiredOffers()
-{
-	const time_t lastExpireDate = time(nullptr) - g_config.getNumber(ConfigManager::MARKET_OFFER_DURATION);
+void IOMarket::checkExpiredOffers() {
+	const time_t lastExpireDate =
+			time(nullptr) - g_config.getNumber(ConfigManager::MARKET_OFFER_DURATION);
 
 	std::ostringstream query;
-	query << "SELECT `id`, `amount`, `price`, `itemtype`, `player_id`, `sale` FROM `market_offers` WHERE `created` <= " << lastExpireDate;
+	query << "SELECT `id`, `amount`, `price`, `itemtype`, `player_id`, `sale` FROM `market_offers` "
+					 "WHERE `created` <= "
+				<< lastExpireDate;
 	g_databaseTasks.addTask(query.str(), IOMarket::processExpiredOffers, true);
 
-	int32_t checkExpiredMarketOffersEachMinutes = g_config.getNumber(ConfigManager::CHECK_EXPIRED_MARKET_OFFERS_EACH_MINUTES);
+	int32_t checkExpiredMarketOffersEachMinutes =
+			g_config.getNumber(ConfigManager::CHECK_EXPIRED_MARKET_OFFERS_EACH_MINUTES);
 	if (checkExpiredMarketOffersEachMinutes <= 0) {
 		return;
 	}
 
-	g_scheduler.addEvent(createSchedulerTask(checkExpiredMarketOffersEachMinutes * 60 * 1000, IOMarket::checkExpiredOffers));
+	g_scheduler.addEvent(createSchedulerTask(checkExpiredMarketOffersEachMinutes * 60 * 1000,
+																					 IOMarket::checkExpiredOffers));
 }
 
-uint32_t IOMarket::getPlayerOfferCount(uint32_t playerId)
-{
+uint32_t IOMarket::getPlayerOfferCount(uint32_t playerId) {
 	std::ostringstream query;
 	query << "SELECT COUNT(*) AS `count` FROM `market_offers` WHERE `player_id` = " << playerId;
 
@@ -219,14 +227,16 @@ uint32_t IOMarket::getPlayerOfferCount(uint32_t playerId)
 	return result->getNumber<int32_t>("count");
 }
 
-MarketOfferEx IOMarket::getOfferByCounter(uint32_t timestamp, uint16_t counter)
-{
+MarketOfferEx IOMarket::getOfferByCounter(uint32_t timestamp, uint16_t counter) {
 	MarketOfferEx offer;
 
 	const int32_t created = timestamp - g_config.getNumber(ConfigManager::MARKET_OFFER_DURATION);
 
 	std::ostringstream query;
-	query << "SELECT `id`, `sale`, `itemtype`, `amount`, `created`, `price`, `player_id`, `anonymous`, (SELECT `name` FROM `players` WHERE `id` = `player_id`) AS `player_name` FROM `market_offers` WHERE `created` = " << created << " AND (`id` & 65535) = " << counter << " LIMIT 1";
+	query << "SELECT `id`, `sale`, `itemtype`, `amount`, `created`, `price`, `player_id`, "
+					 "`anonymous`, (SELECT `name` FROM `players` WHERE `id` = `player_id`) AS `player_name` "
+					 "FROM `market_offers` WHERE `created` = "
+				<< created << " AND (`id` & 65535) = " << counter << " LIMIT 1";
 
 	DBResult_ptr result = Database::getInstance().storeQuery(query.str());
 	if (!result) {
@@ -251,44 +261,49 @@ MarketOfferEx IOMarket::getOfferByCounter(uint32_t timestamp, uint16_t counter)
 	return offer;
 }
 
-void IOMarket::createOffer(uint32_t playerId, MarketAction_t action, uint32_t itemId, uint16_t amount, uint32_t price, bool anonymous)
-{
+void IOMarket::createOffer(uint32_t playerId, MarketAction_t action, uint32_t itemId,
+													 uint16_t amount, uint32_t price, bool anonymous) {
 	std::ostringstream query;
-	query << "INSERT INTO `market_offers` (`player_id`, `sale`, `itemtype`, `amount`, `price`, `created`, `anonymous`) VALUES (" << playerId << ',' << action << ',' << itemId << ',' << amount << ',' << price << ',' << time(nullptr) << ',' << anonymous << ')';
+	query << "INSERT INTO `market_offers` (`player_id`, `sale`, `itemtype`, `amount`, `price`, "
+					 "`created`, `anonymous`) VALUES ("
+				<< playerId << ',' << action << ',' << itemId << ',' << amount << ',' << price << ','
+				<< time(nullptr) << ',' << anonymous << ')';
 	Database::getInstance().executeQuery(query.str());
 }
 
-void IOMarket::acceptOffer(uint32_t offerId, uint16_t amount)
-{
+void IOMarket::acceptOffer(uint32_t offerId, uint16_t amount) {
 	std::ostringstream query;
-	query << "UPDATE `market_offers` SET `amount` = `amount` - " << amount << " WHERE `id` = " << offerId;
+	query << "UPDATE `market_offers` SET `amount` = `amount` - " << amount
+				<< " WHERE `id` = " << offerId;
 	Database::getInstance().executeQuery(query.str());
 }
 
-void IOMarket::deleteOffer(uint32_t offerId)
-{
+void IOMarket::deleteOffer(uint32_t offerId) {
 	std::ostringstream query;
 	query << "DELETE FROM `market_offers` WHERE `id` = " << offerId;
 	Database::getInstance().executeQuery(query.str());
 }
 
-void IOMarket::appendHistory(uint32_t playerId, MarketAction_t type, uint16_t itemId, uint16_t amount, uint32_t price, time_t timestamp, MarketOfferState_t state)
-{
+void IOMarket::appendHistory(uint32_t playerId, MarketAction_t type, uint16_t itemId,
+														 uint16_t amount, uint32_t price, time_t timestamp,
+														 MarketOfferState_t state) {
 	std::ostringstream query;
-	query << "INSERT INTO `market_history` (`player_id`, `sale`, `itemtype`, `amount`, `price`, `expires_at`, `inserted`, `state`) VALUES ("
-		<< playerId << ',' << type << ',' << itemId << ',' << amount << ',' << price << ','
-		<< timestamp << ',' << time(nullptr) << ',' << state << ')';
+	query << "INSERT INTO `market_history` (`player_id`, `sale`, `itemtype`, `amount`, `price`, "
+					 "`expires_at`, `inserted`, `state`) VALUES ("
+				<< playerId << ',' << type << ',' << itemId << ',' << amount << ',' << price << ','
+				<< timestamp << ',' << time(nullptr) << ',' << state << ')';
 	g_databaseTasks.addTask(query.str());
 }
 
-bool IOMarket::moveOfferToHistory(uint32_t offerId, MarketOfferState_t state)
-{
+bool IOMarket::moveOfferToHistory(uint32_t offerId, MarketOfferState_t state) {
 	const int32_t marketOfferDuration = g_config.getNumber(ConfigManager::MARKET_OFFER_DURATION);
 
 	Database& db = Database::getInstance();
 
 	std::ostringstream query;
-	query << "SELECT `player_id`, `sale`, `itemtype`, `amount`, `price`, `created` FROM `market_offers` WHERE `id` = " << offerId;
+	query << "SELECT `player_id`, `sale`, `itemtype`, `amount`, `price`, `created` FROM "
+					 "`market_offers` WHERE `id` = "
+				<< offerId;
 
 	DBResult_ptr result = db.storeQuery(query.str());
 	if (!result) {
@@ -301,14 +316,20 @@ bool IOMarket::moveOfferToHistory(uint32_t offerId, MarketOfferState_t state)
 		return false;
 	}
 
-	appendHistory(result->getNumber<uint32_t>("player_id"), static_cast<MarketAction_t>(result->getNumber<uint16_t>("sale")), result->getNumber<uint16_t>("itemtype"), result->getNumber<uint16_t>("amount"), result->getNumber<uint32_t>("price"), result->getNumber<uint32_t>("created") + marketOfferDuration, state);
+	appendHistory(result->getNumber<uint32_t>("player_id"),
+								static_cast<MarketAction_t>(result->getNumber<uint16_t>("sale")),
+								result->getNumber<uint16_t>("itemtype"), result->getNumber<uint16_t>("amount"),
+								result->getNumber<uint32_t>("price"),
+								result->getNumber<uint32_t>("created") + marketOfferDuration, state);
 	return true;
 }
 
-void IOMarket::updateStatistics()
-{
+void IOMarket::updateStatistics() {
 	std::ostringstream query;
-	query << "SELECT `sale` AS `sale`, `itemtype` AS `itemtype`, COUNT(`price`) AS `num`, MIN(`price`) AS `min`, MAX(`price`) AS `max`, SUM(`price`) AS `sum` FROM `market_history` WHERE `state` = " << OFFERSTATE_ACCEPTED << " GROUP BY `itemtype`, `sale`";
+	query << "SELECT `sale` AS `sale`, `itemtype` AS `itemtype`, COUNT(`price`) AS `num`, "
+					 "MIN(`price`) AS `min`, MAX(`price`) AS `max`, SUM(`price`) AS `sum` FROM "
+					 "`market_history` WHERE `state` = "
+				<< OFFERSTATE_ACCEPTED << " GROUP BY `itemtype`, `sale`";
 	DBResult_ptr result = Database::getInstance().storeQuery(query.str());
 	if (!result) {
 		return;
@@ -329,8 +350,7 @@ void IOMarket::updateStatistics()
 	} while (result->next());
 }
 
-MarketStatistics* IOMarket::getPurchaseStatistics(uint16_t itemId)
-{
+MarketStatistics* IOMarket::getPurchaseStatistics(uint16_t itemId) {
 	auto it = purchaseStatistics.find(itemId);
 	if (it == purchaseStatistics.end()) {
 		return nullptr;
@@ -338,8 +358,7 @@ MarketStatistics* IOMarket::getPurchaseStatistics(uint16_t itemId)
 	return &it->second;
 }
 
-MarketStatistics* IOMarket::getSaleStatistics(uint16_t itemId)
-{
+MarketStatistics* IOMarket::getSaleStatistics(uint16_t itemId) {
 	auto it = saleStatistics.find(itemId);
 	if (it == saleStatistics.end()) {
 		return nullptr;

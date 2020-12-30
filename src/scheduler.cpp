@@ -21,8 +21,7 @@
 
 #include "scheduler.h"
 
-void Scheduler::threadMain()
-{
+void Scheduler::threadMain() {
 	std::unique_lock<std::mutex> eventLockUnique(eventLock, std::defer_lock);
 	while (getState() != THREAD_STATE_TERMINATED) {
 		std::cv_status ret = std::cv_status::no_timeout;
@@ -58,8 +57,7 @@ void Scheduler::threadMain()
 	}
 }
 
-uint32_t Scheduler::addEvent(SchedulerTask* task)
-{
+uint32_t Scheduler::addEvent(SchedulerTask* task) {
 	eventLock.lock();
 
 	if (getState() != THREAD_STATE_RUNNING) {
@@ -98,8 +96,7 @@ uint32_t Scheduler::addEvent(SchedulerTask* task)
 	return eventId;
 }
 
-bool Scheduler::stopEvent(uint32_t eventId)
-{
+bool Scheduler::stopEvent(uint32_t eventId) {
 	if (eventId == 0) {
 		return false;
 	}
@@ -116,12 +113,11 @@ bool Scheduler::stopEvent(uint32_t eventId)
 	return true;
 }
 
-void Scheduler::shutdown()
-{
+void Scheduler::shutdown() {
 	setState(THREAD_STATE_TERMINATED);
 	eventLock.lock();
 
-	//this list should already be empty
+	// this list should already be empty
 	while (!eventList.empty()) {
 		delete eventList.top();
 		eventList.pop();
@@ -132,7 +128,6 @@ void Scheduler::shutdown()
 	eventSignal.notify_one();
 }
 
-SchedulerTask* createSchedulerTask(uint32_t delay, std::function<void (void)> f)
-{
+SchedulerTask* createSchedulerTask(uint32_t delay, std::function<void(void)> f) {
 	return new SchedulerTask(delay, std::move(f));
 }

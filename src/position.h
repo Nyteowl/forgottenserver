@@ -36,19 +36,19 @@ enum Direction : uint8_t {
 	DIRECTION_NONE = 8,
 };
 
-struct Position
-{
+struct Position {
 	constexpr Position() = default;
 	constexpr Position(uint16_t x, uint16_t y, uint8_t z) : x(x), y(y), z(z) {}
 
-	template<int_fast32_t deltax, int_fast32_t deltay>
+	template <int_fast32_t deltax, int_fast32_t deltay>
 	static bool areInRange(const Position& p1, const Position& p2) {
 		return Position::getDistanceX(p1, p2) <= deltax && Position::getDistanceY(p1, p2) <= deltay;
 	}
 
-	template<int_fast32_t deltax, int_fast32_t deltay, int_fast16_t deltaz>
+	template <int_fast32_t deltax, int_fast32_t deltay, int_fast16_t deltaz>
 	static bool areInRange(const Position& p1, const Position& p2) {
-		return Position::getDistanceX(p1, p2) <= deltax && Position::getDistanceY(p1, p2) <= deltay && Position::getDistanceZ(p1, p2) <= deltaz;
+		return Position::getDistanceX(p1, p2) <= deltax && Position::getDistanceY(p1, p2) <= deltay &&
+					 Position::getDistanceZ(p1, p2) <= deltaz;
 	}
 
 	static int_fast32_t getOffsetX(const Position& p1, const Position& p2) {
@@ -103,25 +103,15 @@ struct Position
 		return false;
 	}
 
-	bool operator>(const Position& p) const {
-		return ! (*this < p);
-	}
+	bool operator>(const Position& p) const { return !(*this < p); }
 
-	bool operator==(const Position& p) const {
-		return p.x == x && p.y == y && p.z == z;
-	}
+	bool operator==(const Position& p) const { return p.x == x && p.y == y && p.z == z; }
 
-	bool operator!=(const Position& p) const {
-		return p.x != x || p.y != y || p.z != z;
-	}
+	bool operator!=(const Position& p) const { return p.x != x || p.y != y || p.z != z; }
 
-	Position operator+(const Position& p1) const {
-		return Position(x + p1.x, y + p1.y, z + p1.z);
-	}
+	Position operator+(const Position& p1) const { return Position(x + p1.x, y + p1.y, z + p1.z); }
 
-	Position operator-(const Position& p1) const {
-		return Position(x - p1.x, y - p1.y, z - p1.z);
-	}
+	Position operator-(const Position& p1) const { return Position(x - p1.x, y - p1.y, z - p1.z); }
 
 	int_fast32_t getX() const { return x; }
 	int_fast32_t getY() const { return y; }
